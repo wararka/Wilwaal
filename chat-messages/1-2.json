@@ -1,0 +1,110 @@
+[
+    {
+        "id": "msg_1764194801076",
+        "senderId": 1,
+        "text": "salaan",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:06:41.079Z",
+        "readBy": [
+            2
+        ],
+        "readAt": "2025-11-26T22:06:43.121Z"
+    },
+    {
+        "id": "msg_1764194807645",
+        "senderId": 2,
+        "text": "sidee tahay",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:06:47.645Z",
+        "readBy": [
+            1
+        ],
+        "readAt": "2025-11-26T22:06:48.975Z",
+        "deletedFor": [
+            1,
+            2,
+            3
+        ],
+        "deletedBy": [
+            2
+        ]
+    },
+    {
+        "id": "msg_1764194842036",
+        "senderId": 1,
+        "text": "ma fiicantahay",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:07:22.036Z",
+        "readBy": [
+            2
+        ],
+        "readAt": "2025-11-26T22:07:24.947Z"
+    },
+    {
+        "id": "msg_1764194852472",
+        "senderId": 2,
+        "text": "haa abti sidee tahay",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:07:32.472Z",
+        "readBy": [
+            1
+        ],
+        "readAt": "2025-11-26T22:07:34.723Z"
+    },
+    {
+        "id": "msg_1764195045786",
+        "senderId": 1,
+        "text": "sidee tahay sida kale",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:10:45.787Z",
+        "readBy": [
+            2
+        ],
+        "readAt": "2025-11-26T22:10:48.196Z",
+        "deletedFor": [
+            1,
+            2,
+            3
+        ],
+        "deletedBy": [
+            1
+        ]
+    },
+    {
+        "id": "msg_1764195411585",
+        "senderId": 1,
+        "text": "hi",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:16:51.586Z",
+        "readBy": [
+            2
+        ],
+        "readAt": "2025-11-26T22:16:53.581Z"
+    },
+    {
+        "id": "msg_1764195423014",
+        "senderId": 2,
+        "text": "yah",
+        "mediaPath": null,
+        "mediaType": null,
+        "timestamp": "2025-11-26T22:17:03.014Z",
+        "readBy": [
+            1
+        ],
+        "readAt": "2025-11-26T22:17:04.297Z",
+        "deletedFor": [
+            1,
+            2,
+            3
+        ],
+        "deletedBy": [
+            2
+        ]
+    }
+]

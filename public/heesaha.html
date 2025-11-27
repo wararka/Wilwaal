@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Heesaha Fanaanka</title>
+    <link rel="stylesheet" href="heesaha.css">
+</head>
+<body>
+    <header>
+        <nav id="navbar"></nav>
+    </header>
+
+    <main class="container">
+        <div class="header-actions">
+            <div>
+                <a href="wilwaal-studio.html" class="back-link">&larr; Ku noqo Wilwaal Studio</a>
+                <a href="index.html" class="home-link">🏠 Bogga Hore</a>
+            </div>
+        </div>
+
+        <h1 id="artistHeader">Heesaha Fanaanka: Loading...</h1>
+        
+        <!-- Search Container -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" 
+                   placeholder="🔍 Raadi heesta magaceeda...">
+        </div>
+        
+        <!-- Search Result Info -->
+        <div id="searchInfo" class="results-count" style="display: none;"></div>
+        
+        <!-- Search Result Highlight -->
+        <div id="searchHighlight" class="search-highlight" style="display: none;">
+            <h3>🔍 Heesta La Helay Raadinta</h3>
+            <p>Waxaad ku heshay heestan markaad raadisay. Haddii aad rabto inaad aragto dhammaan heesaha fanaankan, 
+               <a href="#" onclick="showAllSongs()" style="color: var(--hacker-accent); text-decoration: underline;">guji halkan</a>.</p>
+        </div>
+        
+        <div id="songList" class="music-list"></div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Wilwaal Studio</p>
+    </footer>
+
+    <script src="navigation.js"></script> 
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const artistName = urlParams.get('artist');
+        const songId = window.location.hash.replace('#song-', '');
+        const songListContainer = document.getElementById('songList');
+        const searchHighlight = document.getElementById('searchHighlight');
+        const searchInput = document.getElementById('searchInput');
+        const searchInfo = document.getElementById('searchInfo');
+        let allSongs = [];
+        let currentDisplayedSongs = [];
+        let userProfilesCache = {};
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!artistName) {
+                document.getElementById('artistHeader').textContent = 'Khalad: Lama cayimin fanaanka.';
+                songListContainer.innerHTML = '<p style="color: red; text-align: center; background: var(--card-bg); padding: 20px; border-radius: 8px;">Fadlan ka dooro fanaan liiska Wilwaal Studio.</p>';
+                return;
+            }
+            
+            document.getElementById('artistHeader').textContent = `Heesaha Fanaanka: ${artistName}`;
+            document.getElementById('pageTitle').textContent = `Heesaha - ${artistName}`;
+            
+            fetchSongs(artistName);
+            
+            // Setup search functionality
+            setupSearch();
+        });
+
+        // =========================================================
+        // 1. Soo Dejinta Liiska Heesaha
+        // =========================================================
+        function fetchSongs(artist) {
+            songListContainer.innerHTML = '<p style="text-align: center; color: var(--label-color); padding: 30px;">Fadlan sug... Waxaan soo dejinayaa heesaha.</p>';
+            
+            fetch(`/api/music/songs/${encodeURIComponent(artist)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => { throw new Error(err.message); });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Kor u sooc heesaha cusub (sort by uploadedAt descending)
+                    data.songs.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+                    
+                    allSongs = data.songs;
+                    const isAdmin = data.songs.length > 0 ? data.songs[0].isCurrentUserAdmin : false;
+                    
+                    // Haddii songId la helay (search result), muuji hal hees oo keliya
+                    if (songId) {
+                        displaySingleSong(songId, isAdmin);
+                    } else {
+                        displayAllSongs(data.songs, isAdmin);
+                    }
+                })
+                .catch(error => {
+                    console.error('Khalad ku yimid soo dejinta heesaha:', error);
+                    songListContainer.innerHTML = `<p style="text-align: center; color: #e74c3c; padding: 20px; background: var(--card-bg); border-radius: 8px;">${error.message || 'Lama helin heeso ama khalad server ayaa jira.'}</p>`;
+                });
+        }
+
+        // =========================================================
+        // 2. Search Functionality
+        // =========================================================
+        function setupSearch() {
+            searchInput.addEventListener('input', function(e) {
+                const query = e.target.value.trim().toLowerCase();
+                
+                if (query.length === 0) {
+                    displayAllSongs(allSongs, allSongs.length > 0 ? allSongs[0].isCurrentUserAdmin : false);
+                    searchInfo.style.display = 'none';
+                    searchHighlight.style.display = 'none';
+                    return;
+                }
+                
+                if (query.length < 2) {
+                    return;
+                }
+                
+                const filteredSongs = allSongs.filter(song => 
+                    song.songTitle.toLowerCase().includes(query) ||
+                    song.artistName.toLowerCase().includes(query)
+                );
+                
+                if (filteredSongs.length === 0) {
+                    songListContainer.innerHTML = `
+                        <div class="no-results">
+                            <h3>🔍 Lama helin hees</h3>
+                            <p>Ma jiro hees ku acoonsan "${query}"</p>
+                            <button onclick="clearSearch()" style="margin-top: 15px; padding: 10px 20px; background: var(--hacker-accent); color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                Eeg Dhammaan Heesaha
+                            </button>
+                        </div>
+                    `;
+                    searchInfo.style.display = 'none';
+                } else {
+                    displaySongs(filteredSongs, filteredSongs[0].isCurrentUserAdmin);
+                    searchInfo.innerHTML = `Laga helay ${filteredSongs.length} hees oo ku acoonsan "${query}"`;
+                    searchInfo.style.display = 'block';
+                }
+                
+                searchHighlight.style.display = 'none';
+            });
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            displayAllSongs(allSongs, allSongs.length > 0 ? allSongs[0].isCurrentUserAdmin : false);
+            searchInfo.style.display = 'none';
+        }
+
+        // =========================================================
+        // 3. Muujinta Hal Hees Oo Keliya (Raadinta)
+        // =========================================================
+        function displaySingleSong(songId, isCurrentUserAdmin) {
+            const song = allSongs.find(s => s.id === songId);
+            if (!song) {
+                displayAllSongs(allSongs, isCurrentUserAdmin);
+                return;
+            }
+
+            searchHighlight.style.display = 'block';
+            currentDisplayedSongs = [song];
+            displaySongs([song], isCurrentUserAdmin);
+            
+            // Scroll to the song
+            setTimeout(() => {
+                const element = document.getElementById(`song-${songId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 500);
+        }
+
+        // =========================================================
+        // 4. Muujinta Dhammaan Heesaha
+        // =========================================================
+        function displayAllSongs(songs, isCurrentUserAdmin) {
+            searchHighlight.style.display = 'none';
+            searchInfo.style.display = 'none';
+            currentDisplayedSongs = songs;
+            displaySongs(songs, isCurrentUserAdmin);
+        }
+
+        // =========================================================
+        // 5. Muujinta Heesaha (Ku dar profile sawirka)
+        // =========================================================
+        function displaySongs(songs, isCurrentUserAdmin) {
+            songListContainer.innerHTML = ''; 
+            
+            if (songs.length === 0) {
+                songListContainer.innerHTML = '<p style="text-align: center; color: var(--label-color); padding: 30px;">Weli ma jiro heeso ku qoran fanaankan.</p>';
+                return;
+            }
+            
+            // Soo dejinta profile sawirada user-yada
+            const userIds = [...new Set(songs.map(song => song.uploadedByUserId))];
+            fetchUserProfiles(userIds).then(userProfiles => {
+                songs.forEach(song => {
+                    const userProfile = userProfiles[song.uploadedByUserId] || {
+                        username: song.uploadedByUsername,
+                        profileImage: '/profiles/default.png'
+                    };
+
+                    const item = createSongElement(song, userProfile, isCurrentUserAdmin);
+                    songListContainer.appendChild(item);
+                });
+            });
+        }
+
+        // =========================================================
+        // 6. Soo Dejinta Profile Sawirada
+        // =========================================================
+        async function fetchUserProfiles(userIds) {
+            const userProfiles = {};
+            
+            // Check cache first
+            const uncachedUserIds = userIds.filter(id => !userProfilesCache[id]);
+            
+            if (uncachedUserIds.length > 0) {
+                try {
+                    const response = await fetch('/api/users-list');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.success) {
+                            data.users.forEach(user => {
+                                if (userIds.includes(user.id)) {
+                                    userProfilesCache[user.id] = {
+                                        username: user.username,
+                                        profileImage: user.profileImage || '/profiles/default.png'
+                                    };
+                                }
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.error('Khalad ku yimid soo dejinta profile-yada:', error);
+                }
+            }
+            
+            // Use cached data
+            userIds.forEach(id => {
+                if (userProfilesCache[id]) {
+                    userProfiles[id] = userProfilesCache[id];
+                }
+            });
+            
+            return userProfiles;
+        }
+
+        // =========================================================
+        // 7. Abuurinta Element-ka Heesta (Ku dar profile link)
+        // =========================================================
+        function createSongElement(song, userProfile, isCurrentUserAdmin) {
+            const item = document.createElement('div');
+            item.className = 'song-item';
+            item.id = `song-${song.id}`;
+
+            let mediaElement;
+            if (song.mediaMimeType.startsWith('video/')) {
+                mediaElement = `
+                    <div class="media-container">
+                        <video controls controlsList="nodownload" 
+                               oncontextmenu="return false;" 
+                               src="${song.mediaPath}" 
+                               title="${song.songTitle}">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                `;
+            } else {
+                mediaElement = `
+                    <div class="media-container">
+                        <audio controls controlsList="nodownload" 
+                               oncontextmenu="return false;" 
+                               src="${song.mediaPath}" 
+                               title="${song.songTitle}">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                `;
+            }
+
+            item.innerHTML = `
+                <div class="song-info">
+                    <h3>🎵 ${song.songTitle}</h3>
+                    
+                    <!-- Uploader info with profile image and link -->
+                    <div class="uploader-profile" onclick="viewUserProfile(${song.uploadedByUserId})">
+                        <img src="${userProfile.profileImage}" alt="Profile-ka ${userProfile.username}" 
+                             onerror="this.src='/profiles/default.png'">
+                        <div class="uploader-info">
+                            <div class="uploader-name">👤 ${userProfile.username}</div>
+                            <div class="upload-date">
+                                📅 ${new Date(song.uploadedAt).toLocaleDateString('so-SO')} 
+                                🕒 ${new Date(song.uploadedAt).toLocaleTimeString('so-SO', {hour: '2-digit', minute:'2-digit'})}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                ${mediaElement}
+                <div class="admin-controls">
+                    ${isCurrentUserAdmin ? `
+                        <button class="edit-button" onclick="editSong('${song.id}', '${song.songTitle.replace(/'/g, "\\'")}', '${song.artistName.replace(/'/g, "\\'")}')">
+                            ✏️ Beddel
+                        </button>
+                        <button class="delete-button" onclick="deleteSong('${song.id}')">🗑️ Tirtir</button>
+                    ` : ''}
+                </div>
+            `;
+
+            return item;
+        }
+
+        // =========================================================
+        // 8. Booqashada Profile-ka User-ka
+        // =========================================================
+        function viewUserProfile(userId) {
+            window.location.href = `profile.html?userId=${userId}`;
+        }
+
+        // =========================================================
+        // 9. Shaqada Admin: Beddelka Heesta
+        // =========================================================
+        function editSong(id, currentTitle, currentArtist) {
+            const newTitle = prompt(`✏️ Beddel magaca heesta (Hadda: ${currentTitle}):`, currentTitle);
+            if (newTitle === null) return;
+            
+            const newArtist = prompt(`🎤 Beddel magaca fanaanka (Hadda: ${currentArtist}):`, currentArtist);
+            if (newArtist === null) return;
+            
+            if (newTitle.trim() === currentTitle.trim() && newArtist.trim() === currentArtist.trim()) {
+                alert("ℹ️ Ma jiro wax isbeddel ah oo la sameeyay.");
+                return;
+            }
+            
+            if (newTitle.trim() === "" || newArtist.trim() === "") {
+                alert("❌ Magaca heesta iyo magaca fanaanka lama banneyn karo.");
+                return;
+            }
+
+            fetch('/api/music/modify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    songId: id, 
+                    newTitle: newTitle.trim(), 
+                    newArtist: newArtist.trim() 
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.message || "Khalad server."); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ Heesta "${data.song.songTitle}" ayaa si guul leh loo beddelay.`);
+                    fetchSongs(data.song.artistName);
+                } else {
+                    alert(`❌ Khalad: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Khalad ku yimid beddelka:', error);
+                alert(`❌ Khalad: Lama gaarin server-ka si loo beddelo heesta.`);
+            });
+        }
+
+        // =========================================================
+        // 10. Shaqada Admin: Tirtiridda Heesta
+        // =========================================================
+        function deleteSong(id) {
+            if (!confirm("⚠️ Ma hubtaa inaad rabto inaad tirtirto heestan? Tani dib uma soo laabanayso!")) {
+                return;
+            }
+
+            fetch(`/api/music/delete/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.message || "Khalad server."); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    fetchSongs(artistName);
+                } else {
+                    alert(`❌ Khalad: ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Khalad ku yimid tirtiridda:', error);
+                alert(`❌ Khalad: Lama gaarin server-ka si loo tirtiro heesta.`);
+            });
+        }
+
+        // =========================================================
+        // 11. Show All Songs
+        // =========================================================
+        function showAllSongs() {
+            window.location.href = `heesaha.html?artist=${encodeURIComponent(artistName)}`;
+        }
+
+        // =========================================================
+        // 12. Prevent Download (Additional protection)
+        // =========================================================
+        document.addEventListener('contextmenu', function(e) {
+            if (e.target.tagName === 'AUDIO' || e.target.tagName === 'VIDEO') {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            // Disable F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                (e.ctrlKey && e.shiftKey && e.key === 'C') ||
+                (e.ctrlKey && e.key === 'u')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

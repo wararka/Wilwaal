@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <title id="pageTitle">Profile-ka</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <!-- Matrix Background -->
+    <div class="matrix-bg"></div>
+    
+    <header>
+        <a href="index.html">🏠 Ku Noqo Bogga Weyn</a> 
+        <a href="settings.html">⚙️ Goobaha</a>
+    </header>
+
+    <div class="profile-header">
+        <img id="profileImage" src="/profiles/default.png" alt="Sawirka Profile-ka">
+        <h2 id="profileUsername">...</h2>
+        <p>📝 Posts: <strong id="totalPosts">0</strong> | ❤️ Likes: <strong id="totalLikes">0</strong></p>
+        
+        <button id="privacyButton" class="privacy-btn" style="display:none;">🛡️ Xaaladda: Public</button>
+    </div>
+
+    <main>
+        <h3 id="postsTitle">📋 Qoraallada User-kan</h3>
+        <div id="userPostsContainer">
+            <p>🔄 Fadlan sug... Waxaan soo dejinayaa qoraallada.</p>
+        </div>
+    </main>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        // Haddii aad hesho userId URL-ka, waa profile-ka user kale
+        const viewedUserId = urlParams.get('userId'); 
+        let currentSessionUserId = null; // ID-ga userka hadda soo galay
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+        });
+
+        // =========================================================
+        // A. Shaqada Soo Dejinta Xogta Profile-ka iyo Posts-ka
+        // =========================================================
+        function fetchData() {
+            // Marka hore soo deji macluumaadka session-ka
+            fetch('/api/user-info')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        currentSessionUserId = data.user.id;
+                        
+                        // Doorashada endpoint: Haddii uu yahay profile-ka user kale ama profile-kaaga
+                        const targetId = viewedUserId || currentSessionUserId;
+                        const endpoint = targetId === currentSessionUserId ? 
+                                         '/api/profile/my-data' : 
+                                         `/api/profile/user-data/${targetId}`;
+
+                        fetch(endpoint)
+                            .then(response => {
+                                if (response.status === 403) {
+                                    document.getElementById('postsTitle').textContent = `Qoraallada ${document.getElementById('profileUsername').textContent}`;
+                                    document.getElementById('userPostsContainer').innerHTML = '<p style="color:red; text-align: center;">Profile-kan wuxuu ku jiraa qaabka **Only Me**.</p>';
+                                    return Promise.reject('Private Profile');
+                                }
+                                return response.json();
+                            })
+                            .then(profileData => {
+                                if (profileData && profileData.success) {
+                                    updateProfileView(profileData, targetId);
+                                } else {
+                                    document.getElementById('postsTitle').textContent = 'Profile Lama Helin';
+                                    document.getElementById('userPostsContainer').innerHTML = '<p style="color:red; text-align: center;">Lama soo dejin karo xogta profile-ka.</p>';
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Khalad ku yimid soo-dejinta profile-ka:', error);
+                            });
+                    }
+                })
+                .catch(error => console.error('Khalad ku yimid soo-dejinta user-info:', error));
+        }
+
+        // =========================================================
+        // B. Cusboonaysiinta UI-da (User Interface)
+        // =========================================================
+        function updateProfileView(data, targetId) {
+            const { user, posts } = data;
+            
+            // Xogta Guud
+            document.getElementById('profileImage').src = user.profileImage || '/profiles/default.png';
+            document.getElementById('profileUsername').textContent = user.username;
+            document.getElementById('totalPosts').textContent = user.postCount;
+            document.getElementById('totalLikes').textContent = user.totalLikes;
+            document.getElementById('postsTitle').textContent = `Qoraallada ${user.username}`;
+            document.getElementById('pageTitle').textContent = `Profile-ka ${user.username}`;
+            
+            const isMyProfile = targetId === currentSessionUserId;
+
+            // Maaraynta Badhanka Privacy-ga ee Guud
+            const privacyBtn = document.getElementById('privacyButton');
+            if (isMyProfile) {
+                privacyBtn.textContent = `Xaaladda: ${user.isPublic ? 'Public' : 'Only Me'}`;
+                privacyBtn.style.display = 'block';
+                privacyBtn.onclick = toggleProfilePrivacy;
+            } else {
+                 privacyBtn.style.display = 'none';
+            }
+            
+            renderUserPosts(posts, isMyProfile);
+        }
+        
+        // =========================================================
+        // C. Shaqada Dhismaha Posts-ka User-ka
+        // =========================================================
+        function renderUserPosts(posts, isMyProfile) {
+            const container = document.getElementById('userPostsContainer');
+            container.innerHTML = '';
+
+            if (posts.length === 0) {
+                container.innerHTML = '<p style="text-align: center;">User-kan weli ma uusan soo dhigin wax qoraal ah.</p>';
+                return;
+            }
+
+            posts.forEach(post => {
+                const postElement = createPostElement(post, isMyProfile);
+                container.appendChild(postElement);
+            });
+            
+            // Ku xir shaqooyinka (Delete iyo Post Privacy) haddii uu yahay profile-kaaga
+            if (isMyProfile) {
+                attachDeletePostActions();
+                attachPrivacyToggleActions(); 
+            }
+        }
+        
+        // =========================================================
+        // D. Shaqada Dhismaha Hal Post (oo leh Delete iyo Toggle Privacy Button)
+        // =========================================================
+        function createPostElement(post, showActions) {
+            const div = document.createElement('div');
+            div.className = 'post';
+            div.setAttribute('data-post-id', post.id);
+
+            const postDate = new Date(post.createdAt);
+            const formattedTime = postDate.toLocaleDateString('so-SO', { 
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' 
+            });
+
+            const privacyButtonText = post.isPublic ? 'U Beddel Only Me' : 'U Beddel Public';
+
+            div.innerHTML = `
+                <div class="post-header">
+                    <span class="post-username">${post.username}</span> 
+                    
+                    ${showActions ? `
+                        <div style="display:flex; gap: 10px;">
+                            <button class="privacy-toggle-btn" data-id="${post.id}" data-is-public="${post.isPublic}">
+                                ${privacyButtonText}
+                            </button>
+                            <button class="post-delete-btn" data-id="${post.id}">Tirtir Post-ka</button>
+                        </div>
+                    ` : ''}
+                </div>
+                
+                <div class="post-content">
+                    <p>${post.text ? post.text.replace(/\n/g, '<br>') : ''}</p>
+                    ${post.mediaPath ? `
+                        <${post.mediaType === 'image' ? 'img' : post.mediaType === 'video' ? 'video controls' : 'audio controls'} 
+                            src="${post.mediaPath}" class="post-media" 
+                            ${post.mediaType === 'video' ? 'style="max-width: 100%; height: auto;"' : ''}>
+                        </${post.mediaType === 'image' ? 'img' : post.mediaType === 'video' ? 'video' : 'audio'}>
+                    ` : ''}
+                </div>
+
+                <div class="post-stats">
+                    <span class="post-time">(${formattedTime})</span> | 
+                    <span>❤ ${post.likedBy ? post.likedBy.length : 0} | </span>
+                    <span>👁 ${post.views || 0} | </span>
+                    <span>💬 ${post.comments ? post.comments.length : 0} Faallooyin</span>
+                    ${!post.isPublic ? '<span style="color: #e74c3c; margin-left: 10px;">(Only Me)</span>' : ''}
+                </div>
+            `;
+            return div;
+        }
+
+
+        // =========================================================
+        // E. Shaqada Beddelka Privacy-ga (Profile Guud)
+        // =========================================================
+        function toggleProfilePrivacy() {
+            fetch('/api/profile/toggle-privacy', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const newState = data.isPublic ? 'Public' : 'Only Me';
+                        document.getElementById('privacyButton').textContent = `Xaaladda: ${newState}`;
+                        alert(`Xaaladda profile-kaaga waxa loo beddelay: ${newState}`);
+                    } else {
+                        alert('Khalad: Lama beddeli karo xaaladda privacy-ga.');
+                    }
+                })
+                .catch(error => alert('Khalad: Lama gaarin server-ka.'));
+        }
+
+        // =========================================================
+        // F. Shaqada Tirtirista Post-ka (Delete Post)
+        // =========================================================
+        function attachDeletePostActions() {
+            document.querySelectorAll('.post-delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const postId = e.target.getAttribute('data-id');
+                    if (confirm("Ma hubtaa in aad rabto in aad si joogto ah u tirtirto qoraalkan?")) {
+                        handleDeletePost(postId, e.target);
+                    }
+                });
+            });
+        }
+
+        function handleDeletePost(postId, buttonElement) {
+            fetch(`/api/posts/delete/${postId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Post-ka si guul leh ayaa loo tirtiray.');
+                        // Tirtir Post-ka bogga ka
+                        document.querySelector(`.post[data-post-id="${postId}"]`).remove();
+                        // Cusbooneysii tirada Post-yada iyo Likes-ka
+                        fetchData(); // Dib u wac fetchData si loo cusbooneysiiyo stats-ka
+                    } else {
+                        alert('Khalad: Lama tirtiri karo Post-ka. ' + data.message);
+                    }
+                })
+                .catch(error => alert('Khalad: Lama gaarin server-ka.'));
+        }
+
+        // =========================================================
+        // G. Shaqada Beddelka Privacy-ga ee Post-ga
+        // =========================================================
+        function attachPrivacyToggleActions() {
+            document.querySelectorAll('.privacy-toggle-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const postId = e.target.getAttribute('data-id');
+                    handleTogglePostPrivacy(postId, e.target);
+                });
+            });
+        }
+
+        function handleTogglePostPrivacy(postId, buttonElement) {
+            fetch(`/api/posts/toggle-privacy/${postId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const newState = data.isPublic ? 'Public' : 'Only Me';
+                        buttonElement.textContent = `U Beddel ${data.isPublic ? 'Only Me' : 'Public'}`;
+                        buttonElement.setAttribute('data-is-public', data.isPublic);
+                        
+                        // Muuji xaaladda (Only Me) ee stats-ka
+                        const postStats = document.querySelector(`.post[data-post-id="${postId}"] .post-stats`);
+                        if (!data.isPublic) {
+                            postStats.innerHTML += '<span style="color: #e74c3c; margin-left: 10px;">(Only Me)</span>';
+                        } else {
+                            // Xaaladda Public, ka tirtir Only Me
+                            const onlyMeSpan = postStats.querySelector('span[style*="Only Me"]');
+                            if(onlyMeSpan) onlyMeSpan.remove();
+                        }
+                        
+                        alert(`Post-ka si guul leh ayaa loogu beddelay: ${newState}`);
+                    } else {
+                        alert('Khalad: Lama beddeli karo xaaladda privacy-ga post-ka. ' + data.message);
+                    }
+                })
+                .catch(error => alert('Khalad: Lama gaarin server-ka.'));
+        }
+    </script>
+</body>
+</html>

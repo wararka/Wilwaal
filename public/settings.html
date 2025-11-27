@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goobaha Koontada - Wilwaal Studio</title>
+    <link rel="stylesheet" href="settings.css">
+</head>
+<body id="settingsBody">
+    <button class="theme-toggle" id="themeToggle" title="Bedel Habka Midabka">
+        🌙
+    </button>
+
+    <div class="container">
+        <a href="index.html" class="btn btn-secondary back-home-btn">← Bogga Weyn</a>
+        
+        <h1>🔧 Goobaha Koontadaada</h1>
+        
+        <div id="message" class="message"></div>
+
+        <div class="settings-section">
+            <h2 class="section-title">🔐 Badal Furaha Sirta</h2>
+            <form id="passwordForm" class="settings-form">
+                <div class="form-group">
+                    <label for="oldPassword">Furaha Sirta Hore:</label>
+                    <input type="password" id="oldPassword" name="oldPassword" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Furaha Sirta Cusub:</label>
+                    <input type="password" id="newPassword" name="newPassword" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Ku Celceli Furaha Cusub:</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+                </div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">🔄 Badal Furaha Sirta</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="settings-section">
+            <h2 class="section-title">🌓 Habka Muuqaalka</h2>
+            <div class="toggle-group">
+                <span class="toggle-label">Dark Mode:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="themeToggleCheckbox">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            <p class="theme-info">Badalkani wuxuu saameynayaa muuqaalka website-ka oo dhan.</p>
+        </div>
+
+        <div class="settings-section">
+            <h2 class="section-title">👤 Beddelka Profile-ka</h2>
+            <form id="updateForm" class="settings-form">
+                <div class="form-group">
+                    <label for="currentUsername">Username Hadda:</label>
+                    <input type="text" id="currentUsername" disabled value="Loading...">
+                </div>
+
+                <div class="form-group">
+                    <label for="newUsername">Username Cusub:</label>
+                    <input type="text" id="newUsername" name="newUsername" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newProfileImage">Sawirka Profile-ka Cusub (Ikhtiyaar):</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="newProfileImage" name="newProfileImage" accept="image/*">
+                        <label for="newProfileImage" class="file-input-label">📷 Dooro Sawir</label>
+                    </div>
+                </div>
+
+                <div class="profile-preview">
+                    <img id="profileImagePreview" src="" alt="Sawirka Profile-ka" class="profile-image" style="display: none;">
+                </div>
+
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">💾 Keydi Xogta</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="settings-section danger-zone">
+            <h2 class="section-title">🗑️ Tirtirista Akoonka</h2>
+            <p class="warning-text">
+                <strong>⚠️ DIGNIIN CULUS!</strong> Tirtirista Akoonkaaga waa mid joogto ah, waxaana la tirtiri doonaa dhammaan qoraalladaada iyo xogtaada. Lama soo celin karo!
+            </p>
+            <div class="button-group">
+                <button id="deleteAccountBtn" class="btn btn-danger">🔥 Tirtir Akoonkeyga</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h3>🗑️ Hubi Tirtirista Akoonka</h3>
+            <p>Ma hubtaa inaad rabto inaad tirtirto akoonkaaga? Tan waa ficil aan la soo celin karin!</p>
+            <div class="modal-buttons">
+                <button id="cancelDeleteBtn" class="btn btn-secondary">🚫 Jooji</button>
+                <button id="confirmDeleteBtn" class="btn btn-danger">🔥 Haa, Tirtir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Goobaha Guud ee CSS-ka
+        const THEME_KEY = 'wilwaalStudioTheme';
+        const darkTheme = 'dark-theme';
+        const lightTheme = 'light-theme';
+        const body = document.getElementById('settingsBody');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // =================================================================
+        // A. THEME MODE FUNCTIONS (Dark/Light)
+        // =================================================================
+        function applyTheme(theme) {
+            if (theme === lightTheme) {
+                body.classList.remove(darkTheme);
+                body.classList.add(lightTheme);
+            } else {
+                body.classList.remove(lightTheme);
+                body.classList.add(darkTheme);
+            }
+            localStorage.setItem(THEME_KEY, theme);
+        }
+
+        function initTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || darkTheme;
+            applyTheme(savedTheme);
+            themeToggle.checked = savedTheme === darkTheme;
+        }
+
+        themeToggle.addEventListener('change', () => {
+            const newTheme = themeToggle.checked ? darkTheme : lightTheme;
+            applyTheme(newTheme);
+        });
+        
+        // =================================================================
+        // B. FETCH USER INFO & FORM PREP
+        // =================================================================
+        function fetchUserInfo() {
+            fetch('/api/user-info')
+                .then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        document.getElementById('currentUsername').value = data.user.username;
+                        document.getElementById('newUsername').placeholder = `Hadda: ${data.user.username}`;
+                    }
+                })
+                .catch(error => console.error('Khalad ku yimid soo-dejinta user-info:', error));
+        }
+
+        // =================================================================
+        // C. PASSWORD CHANGE LOGIC
+        // =================================================================
+        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confPass = document.getElementById('confirmPassword').value;
+            const messageEl = document.getElementById('message');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            messageEl.textContent = '';
+            messageEl.className = 'system-message';
+
+            if (newPass !== confPass) {
+                messageEl.textContent = "Furaha sirta cusub ma isku mid maaha.";
+                messageEl.classList.add('error');
+                return;
+            }
+            if (newPass.length < 6) {
+                messageEl.textContent = "Furaha sirta waa inuu ka badan yahay 6 xaraf.";
+                messageEl.classList.add('error');
+                return;
+            }
+
+            submitBtn.textContent = 'Ku soco...';
+            submitBtn.disabled = true;
+
+            fetch('/settings/change-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageEl.innerHTML = `
+                        <div style="text-align: center; padding: 10px;">
+                            <div style="font-size: 1.5em; margin-bottom: 8px;">✅</div>
+                            <strong>${data.message}</strong>
+                        </div>
+                    `;
+                    messageEl.classList.add('success');
+                    this.reset();
+                } else {
+                    messageEl.textContent = "Khalad: " + (data.message || "Badalka furaha sirta ma shaqayn.");
+                    messageEl.classList.add('error');
+                }
+            })
+            .catch(error => {
+                messageEl.textContent = "Khalad server: Lama gaarin API-ga.";
+                messageEl.classList.add('error');
+            })
+            .finally(() => {
+                submitBtn.textContent = 'Badal Furaha Sirta';
+                submitBtn.disabled = false;
+            });
+        });
+
+        // =================================================================
+        // D. UPDATE USERNAME AND PROFILE IMAGE - CUSUB (With Success Message & Redirect)
+        // =================================================================
+        document.getElementById('updateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newUsername = document.getElementById('newUsername').value;
+            const profileImage = document.getElementById('newProfileImage').files[0];
+            const messageEl = document.getElementById('message');
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            messageEl.textContent = '';
+            messageEl.className = 'system-message';
+            submitBtn.textContent = 'Ku soco...';
+            submitBtn.disabled = true;
+            
+            if (!newUsername || newUsername.trim() === '') {
+                messageEl.textContent = "Fadlan geli username cusub.";
+                messageEl.classList.add('error');
+                submitBtn.textContent = 'Badal Xogta';
+                submitBtn.disabled = false;
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('newUsername', newUsername.trim());
+            if (profileImage) {
+                formData.append('newProfileImage', profileImage);
+            }
+
+            fetch('/settings/update', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageEl.innerHTML = `
+                        <div style="text-align: center; padding: 15px;">
+                            <div style="font-size: 2em; margin-bottom: 10px;">✅</div>
+                            <strong style="font-size: 1.2em;">${data.message}</strong>
+                            <p style="margin: 10px 0 0 0; font-size: 0.9em;">
+                                Waxaa lagugu celinayaa bogga hore <span id="countdown">5</span> ilbiriqsi gudahood...
+                            </p>
+                        </div>
+                    `;
+                    messageEl.classList.add('success');
+                    
+                    // Update the current username display
+                    document.getElementById('currentUsername').value = data.user.username;
+                    document.getElementById('newUsername').placeholder = `Hadda: ${data.user.username}`;
+                    document.getElementById('newUsername').value = '';
+                    document.getElementById('newProfileImage').value = '';
+                    
+                    // Countdown and redirect
+                    let countdown = 5;
+                    const countdownElement = document.getElementById('countdown');
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        countdownElement.textContent = countdown;
+                        
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                    
+                } else {
+                    messageEl.textContent = "Khalad: " + (data.message || "Cusboonaysiinta ma shaqayn.");
+                    messageEl.classList.add('error');
+                    submitBtn.textContent = 'Badal Xogta';
+                    submitBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Khalad ku yimid cusboonaysiinta:', error);
+                messageEl.textContent = "Khalad server: Lama cusboonaysiin karo xogta.";
+                messageEl.classList.add('error');
+                submitBtn.textContent = 'Badal Xogta';
+                submitBtn.disabled = false;
+            });
+        });
+
+        // =================================================================
+        // E. ACCOUNT DELETION
+        // =================================================================
+        document.getElementById('deleteAccountBtn').addEventListener('click', () => {
+            if (confirm("Ma hubtaa in aad rabto in aad tirtirto akoonkaaga? Tani dib uma soo laabanayso!")) {
+                fetch('/settings/delete-account', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert("Akoonkaaga waa la tirtiray. Waxaa lagu celinayaa bogga soo-gelista.");
+                            window.location.href = '/login.html';
+                        } else {
+                            alert("Khalad ku yimid tirtirista: " + data.message);
+                        }
+                    })
+                    .catch(error => alert("Khalad: Lama gaarin server-ka."));
+            }
+        });
+
+        // =================================================================
+        // F. INITIALIZE ON LOAD
+        // =================================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme(); 
+            fetchUserInfo();
+        });
+    </script>
+</body>
+</html>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const currentTheme = localStorage.getItem('theme') || 'dark';
+    
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    updateToggleButton(currentTheme);
+    
+    themeToggle.addEventListener('click', function() {
+        let theme = document.documentElement.getAttribute('data-theme');
+        theme = theme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        updateToggleButton(theme);
+    });
+    
+    function updateToggleButton(theme) {
+        themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+    }
+
+    // Profile image preview
+    const profileImageInput = document.getElementById('newProfileImage');
+    const profileImagePreview = document.getElementById('profileImagePreview');
+    
+    if (profileImageInput && profileImagePreview) {
+        profileImageInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profileImagePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // Modal functionality
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteAccountBtn = document.getElementById('deleteAccountBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    
+    if (deleteAccountBtn) {
+        deleteAccountBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'block';
+        });
+    }
+    
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+        });
+    }
+    
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function() {
+            // Add loading state
+            this.classList.add('loading');
+            // Submit delete form or make API call
+            document.getElementById('deleteAccountForm').submit();
+        });
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === deleteModal) {
+            deleteModal.style.display = 'none';
+        }
+    });
+
+    // Form validation
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.classList.add('loading');
+                submitBtn.disabled = true;
+            }
+        });
+    });
+
+    // Privacy toggle feedback
+    const privacyToggle = document.getElementById('privacyToggle');
+    if (privacyToggle) {
+        privacyToggle.addEventListener('change', function() {
+            const status = this.checked ? 'Public' : 'Private';
+            showMessage(`Profile is now ${status}`, 'success');
+        });
+    }
+
+    // Utility function to show messages
+    function showMessage(text, type) {
+        const messageDiv = document.getElementById('messageDisplay');
+        if (messageDiv) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+    }
+});
+</script>

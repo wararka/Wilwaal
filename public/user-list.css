@@ -1,0 +1,625 @@
+/* =================================================== */
+/*              HACKER STYLE - USER LIST              */
+/* =================================================== */
+
+:root {
+    --hacker-green: #00ff00;
+    --matrix-green: #00cc00;
+    --dark-green: #003300;
+    --black: #000000;
+    --dark-gray: #111111;
+    --terminal-text: #00ff00;
+    --glow-color: #00ff00;
+    --terminal-bg: rgba(0, 20, 0, 0.9);
+    --cyber-blue: #00ccff;
+    --neon-pink: #ff00ff;
+}
+
+[data-theme="light"] {
+    --hacker-green: #008800;
+    --matrix-green: #006600;
+    --dark-green: #e8ffe8;
+    --black: #ffffff;
+    --dark-gray: #f0f0f0;
+    --terminal-text: #008800;
+    --glow-color: #008800;
+    --terminal-bg: rgba(232, 255, 232, 0.9);
+    --cyber-blue: #0088cc;
+    --neon-pink: #cc00cc;
+}
+
+/* =================================================== */
+/*                  BASE STYLES                       */
+/* =================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--black);
+    color: var(--terminal-text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Matrix Rain Background */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(transparent 95%, rgba(0, 255, 0, 0.1) 100%),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 50, 0, 0.1) 3px,
+            rgba(0, 50, 0, 0.1) 4px
+        );
+    pointer-events: none;
+    z-index: -1;
+    animation: matrixRain 20s linear infinite;
+}
+
+@keyframes matrixRain {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+}
+
+/* Scan Lines Effect */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.03) 0px,
+        rgba(0, 0, 0, 0.03) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* =================================================== */
+/*                  HEADER STYLES                     */
+/* =================================================== */
+header {
+    background: rgba(0, 30, 0, 0.95);
+    border-bottom: 2px solid var(--hacker-green);
+    padding: 15px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+header a {
+    color: var(--hacker-green);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 8px 15px;
+    border: 1px solid var(--hacker-green);
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+}
+
+header a::before {
+    content: "←";
+    margin-right: 5px;
+}
+
+header a:hover {
+    background: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 15px var(--glow-color);
+    transform: translateX(-5px);
+}
+
+/* =================================================== */
+/*                  MAIN CONTAINER                    */
+/* =================================================== */
+.user-list-container {
+    max-width: 800px;
+    margin: 80px auto 20px auto;
+    padding: 0 20px;
+}
+
+/* =================================================== */
+/*                  TERMINAL HEADER                   */
+/* =================================================== */
+.user-list-container h2 {
+    text-align: center;
+    color: var(--hacker-green);
+    font-size: 2em;
+    margin-bottom: 30px;
+    text-shadow: 
+        0 0 10px var(--glow-color),
+        0 0 20px var(--glow-color);
+    position: relative;
+    animation: glitch 5s infinite;
+    padding: 20px;
+    background: var(--terminal-bg);
+    border: 2px solid var(--hacker-green);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+@keyframes glitch {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-2px); }
+    20% { transform: translateX(2px); }
+    30% { transform: translateX(-1px); }
+    40% { transform: translateX(1px); }
+}
+
+.user-list-container h2::before {
+    content: ">_ USER_DATABASE_ACCESS";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    color: var(--hacker-green);
+    padding: 0 15px;
+    font-size: 12px;
+    text-shadow: none;
+}
+
+/* =================================================== */
+/*                  USERS LIST STYLES                 */
+/* =================================================== */
+#usersList {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Loading/Typing Effect */
+.typing-effect {
+    text-align: center;
+    color: var(--matrix-green);
+    font-size: 16px;
+    padding: 40px 20px;
+    background: var(--terminal-bg);
+    border: 1px solid var(--hacker-green);
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+.typing-effect::after {
+    content: "|";
+    animation: blink 1s infinite;
+    margin-left: 5px;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+/* =================================================== */
+/*                  USER ITEM STYLES                  */
+/* =================================================== */
+.user-item {
+    background: rgba(0, 30, 0, 0.7);
+    border: 2px solid var(--hacker-green);
+    border-radius: 15px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.1);
+    animation: slideInUp 0.5s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.user-item:hover::before {
+    left: 100%;
+}
+
+.user-item:hover {
+    background: rgba(0, 50, 0, 0.9);
+    border-color: var(--cyber-blue);
+    box-shadow: 
+        0 0 20px rgba(0, 255, 0, 0.4),
+        0 0 40px rgba(0, 204, 255, 0.2);
+    transform: translateY(-5px) scale(1.02);
+}
+
+.user-item:active {
+    transform: translateY(-2px) scale(0.98);
+}
+
+/* =================================================== */
+/*                  USER STATUS INDICATOR             */
+/* =================================================== */
+.user-status {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--black);
+    position: relative;
+    flex-shrink: 0;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { 
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% { 
+        box-shadow: 0 0 15px currentColor, 0 0 20px currentColor;
+    }
+}
+
+.user-status::after {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    opacity: 0.5;
+    animation: ripple 2s infinite;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* =================================================== */
+/*                  USER IMAGE STYLES                 */
+/* =================================================== */
+.user-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid var(--hacker-green);
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+    background: var(--dark-green);
+}
+
+.user-item:hover .user-image {
+    border-color: var(--cyber-blue);
+    box-shadow: 
+        0 0 15px var(--hacker-green),
+        0 0 25px var(--cyber-blue);
+    transform: rotate(5deg) scale(1.1);
+}
+
+/* =================================================== */
+/*                  USERNAME STYLES                   */
+/* =================================================== */
+.username {
+    flex: 1;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--terminal-text);
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.user-item:hover .username {
+    color: var(--cyber-blue);
+    text-shadow: 
+        0 0 10px var(--cyber-blue),
+        0 0 20px var(--cyber-blue);
+    transform: translateX(5px);
+}
+
+.username::before {
+    content: "USER:";
+    position: absolute;
+    top: -15px;
+    left: 0;
+    font-size: 10px;
+    color: var(--matrix-green);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-item:hover .username::before {
+    opacity: 1;
+}
+
+/* =================================================== */
+/*                  CHAT BUTTON STYLES                */
+/* =================================================== */
+.start-chat {
+    background: linear-gradient(45deg, var(--hacker-green), var(--cyber-blue));
+    color: var(--black);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.start-chat::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s ease;
+}
+
+.user-item:hover .start-chat::before {
+    left: 100%;
+}
+
+.user-item:hover .start-chat {
+    background: linear-gradient(45deg, var(--cyber-blue), var(--neon-pink));
+    box-shadow: 
+        0 0 20px rgba(0, 204, 255, 0.5),
+        0 0 40px rgba(255, 0, 255, 0.3);
+    transform: scale(1.1);
+}
+
+/* =================================================== */
+/*                  EMPTY STATE STYLES                */
+/* =================================================== */
+#usersList p[style*="color: #888"] {
+    text-align: center;
+    color: var(--matrix-green) !important;
+    font-size: 16px;
+    padding: 40px 20px;
+    background: var(--terminal-bg);
+    border: 2px solid var(--hacker-green);
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    position: relative;
+}
+
+#usersList p[style*="color: #888"]::before {
+    content: ">_ SYSTEM_MESSAGE";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    color: var(--hacker-green);
+    padding: 0 15px;
+    font-size: 10px;
+}
+
+/* =================================================== */
+/*                  ERROR STATE STYLES                */
+/* =================================================== */
+#usersList p[style*="color: #ff4444"] {
+    text-align: center;
+    color: #ff4444 !important;
+    font-size: 16px;
+    padding: 40px 20px;
+    background: rgba(255, 0, 0, 0.1);
+    border: 2px solid #ff4444;
+    border-radius: 10px;
+    margin: 20px 0;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+    position: relative;
+    text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+#usersList p[style*="color: #ff4444"]::before {
+    content: ">_ ERROR_MESSAGE";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--black);
+    color: #ff4444;
+    padding: 0 15px;
+    font-size: 10px;
+}
+
+/* =================================================== */
+/*                  RESPONSIVE DESIGN                 */
+/* =================================================== */
+@media (max-width: 768px) {
+    .user-list-container {
+        margin: 70px auto 15px auto;
+        padding: 0 15px;
+    }
+    
+    .user-list-container h2 {
+        font-size: 1.5em;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .user-item {
+        padding: 15px;
+        gap: 12px;
+    }
+    
+    .user-image {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .username {
+        font-size: 16px;
+    }
+    
+    .start-chat {
+        padding: 8px 15px;
+        font-size: 11px;
+    }
+    
+    header {
+        padding: 12px 15px;
+    }
+    
+    header a {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-list-container {
+        margin: 60px auto 10px auto;
+        padding: 0 10px;
+    }
+    
+    .user-list-container h2 {
+        font-size: 1.3em;
+        padding: 12px;
+    }
+    
+    .user-item {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px 15px;
+        gap: 10px;
+    }
+    
+    .user-status {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+    
+    .username::before {
+        display: none;
+    }
+    
+    .start-chat {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+/* =================================================== */
+/*                  SPECIAL EFFECTS                   */
+/* =================================================== */
+/* Terminal flicker effect */
+@keyframes terminalFlicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.95; }
+}
+
+.user-list-container {
+    animation: terminalFlicker 10s infinite;
+}
+
+/* Data stream effect */
+@keyframes dataStream {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100px; }
+}
+
+.user-item::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 255, 0, 0.05) 3px,
+        rgba(0, 255, 0, 0.05) 4px
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-item:hover::after {
+    opacity: 1;
+    animation: dataStream 2s linear infinite;
+}
+
+/* =================================================== */
+/*                  ACCESSIBILITY                     */
+/* =================================================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus styles for keyboard navigation */
+.user-item:focus {
+    outline: 2px solid var(--cyber-blue);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --hacker-green: #00ff00;
+        --terminal-text: #ffffff;
+        --black: #000000;
+    }
+}

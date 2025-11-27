@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard-ka Maamulka - Wilwaal Studio</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle">🌙</button>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Dashboard-ka Maamulka</h1>
+            <a href="index.html" class="back-link">← Ku Noqo Bogga Weyn</a>
+        </div>
+
+        <!-- Admin Tabs -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="users">👥 Isticmaalayaasha</button>
+            <button class="tab-btn" data-tab="announcements">📢 Fariimaha</button>
+            <button class="tab-btn" data-tab="group">👑 Kooxda Admin</button>
+            <button class="tab-btn" data-tab="cleanup">🧹 Nadiifinta</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="message" style="display: none;"></div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalUsers">0</div>
+                    <div class="stat-label">Wadarta Isticmaalayaasha</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="activeUsers">0</div>
+                    <div class="stat-label">Isticmaalayaasha Firfircoon</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="blockedUsers">0</div>
+                    <div class="stat-label">Isticmaalayaasha Xanniban</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="adminUsers">0</div>
+                    <div class="stat-label">Maamulayaal</div>
+                </div>
+            </div>
+
+            <div class="admin-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Nooca</th>
+                            <th>Xubinimada</th>
+                            <th>Post-yada</th>
+                            <th>Comment-yada</th>
+                            <th>Xaaladda</th>
+                            <th>Ficillada</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Soo dejineysaa xogta isticmaalayaasha...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div id="announcements-tab" class="tab-content">
+            <div class="admin-actions">
+                <button class="announcement-btn" onclick="showAnnouncementModal()">➕ Abuur Fariin Cusub</button>
+            </div>
+
+            <div id="announcementsList">
+                <div class="loading">Soo dejineysaa fariimaha...</div>
+            </div>
+        </div>
+
+        <!-- Admin Group Tab -->
+        <div id="group-tab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="groupMembers">0</div>
+                    <div class="stat-label">Xubnaha Kooxda</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="pendingInvites">0</div>
+                    <div class="stat-label">Codsiga La sugayo</div>
+                </div>
+            </div>
+
+            <h3 style="margin: 20px 0;">Xubnaha Kooxda</h3>
+            <div id="groupMembersList" class="admin-table">
+                <div class="loading">Soo dejineysaa xubnaha kooxda...</div>
+            </div>
+
+            <h3 style="margin: 20px 0;">Codsiga La sugayo</h3>
+            <div id="invitationsList" class="admin-table">
+                <div class="loading">Soo dejineysaa codsiyada...</div>
+            </div>
+        </div>
+
+        <!-- Cleanup Tab -->
+        <div id="cleanup-tab" class="tab-content">
+            <div class="admin-actions">
+                <button class="cleanup-btn" onclick="runImageCleanup()">🧹 Nadiifi Sawirada Aan La Isticmaalin</button>
+            </div>
+
+            <div id="cleanupReport" style="display: none;">
+                <!-- Cleanup report will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcementModal" class="modal">
+        <div class="modal-content">
+            <h3>📢 Abuur Fariin Cusub</h3>
+            <form id="announcementForm">
+                <div class="form-group">
+                    <label for="announcementTitle">Cinwaanka:</label>
+                    <input type="text" id="announcementTitle" required placeholder="Geli cinwaanka fariinta">
+                </div>
+                <div class="form-group">
+                    <label for="announcementMessage">Fariinta:</label>
+                    <textarea id="announcementMessage" required placeholder="Geli fariinta..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="announcementType">Nooca:</label>
+                    <select id="announcementType">
+                        <option value="info">🔵 Macluumaad</option>
+                        <option value="warning">🟡 Digniin</option>
+                        <option value="success">🟢 Guul</option>
+                        <option value="error">🔴 Khalad</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAnnouncementModal()">Jooji</button>
+                    <button type="submit" class="btn btn-primary">Soo Dhig Fariinta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <h3>👑 Ku Guji Kooxda Admin</h3>
+            <div class="form-group">
+                <label for="userSelect">Dooro User:</label>
+                <select id="userSelect">
+                    <option value="">-- Dooro user --</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeInviteModal()">Jooji</button>
+                <button type="button" class="btn btn-primary" onclick="sendInvitation()">Dir Codsiga</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================
+        // THEME MANAGEMENT
+        // =========================================================
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateThemeButton(currentTheme);
+        
+        themeToggle.addEventListener('click', () => {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const newTheme = theme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+        });
+        
+        function updateThemeButton(theme) {
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        // =========================================================
+        // TAB MANAGEMENT
+        // =========================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                btn.classList.add('active');
+                const tabId = btn.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).classList.add('active');
+                
+                // Load tab data
+                loadTabData(btn.getAttribute('data-tab'));
+            });
+        });
+
+        function loadTabData(tab) {
+            switch(tab) {
+                case 'users':
+                    fetchUsersData();
+                    break;
+                case 'announcements':
+                    fetchAnnouncements();
+                    break;
+                case 'group':
+                    fetchAdminGroup();
+                    break;
+                case 'cleanup':
+                    // Cleanup tab doesn't need pre-loading
+                    break;
+            }
+        }
+
+        // =========================================================
+        // MESSAGE MANAGEMENT
+        // =========================================================
+        function showMessage(message, type = 'error') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = message;
+            messageEl.className = type === 'error' ? 'error-message' : 'success-message';
+            messageEl.style.display = 'block';
+            
+            // Auto-hide success messages
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageEl.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // =========================================================
+        // USERS MANAGEMENT
+        // =========================================================
+        function fetchUsersData() {
+            fetch('/api/admin/users')
+                .then(response => {
+                    if (response.status === 403) {
+                        showMessage("Waxaad u baahan tahay xuquuqda Admin-ka si aad u gasho boggan.", 'error');
+                        setTimeout(() => window.location.href = '/index.html', 2000);
+                        return Promise.reject('Not Admin');
+                    }
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.success) {
+                        renderUserTable(data.users);
+                        updateStats(data.users);
+                    } else {
+                        showMessage("Lama soo dejin karo xogta user-ka.", 'error');
+                    }
+                })
+                .catch(error => {
+                    if (error !== 'Not Admin') {
+                        showMessage("Khalad server: " + error.message, 'error');
+                    }
+                });
+        }
+
+        function updateStats(users) {
+            const totalUsers = users.length;
+            const activeUsers = users.filter(u => !u.isBlocked).length;
+            const blockedUsers = users.filter(u => u.isBlocked).length;
+            const adminUsers = users.filter(u => u.isAdmin).length;
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('blockedUsers').textContent = blockedUsers;
+            document.getElementById('adminUsers').textContent = adminUsers;
+        }
+
+        function renderUserTable(users) {
+            const tbody = document.getElementById('userTableBody');
+            
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">Ma jiro isticmaalayaal.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                
+                const statusClass = user.isBlocked ? 'blocked' : 'active';
+                const statusText = user.isBlocked ? 'Xanniban' : 'Firfircoon';
+                const userType = user.isAdmin ? 'admin' : 'user';
+                const typeText = user.isAdmin ? 'Maamule' : 'User';
+
+                tr.innerHTML = `
+                    <td>${user.id}</td>
+                    <td><strong>${user.username}</strong></td>
+                    <td><span class="user-status ${userType}">${typeText}</span></td>
+                    <td>${new Date(user.joinedAt).toLocaleDateString('so-SO')}</td>
+                    <td>${user.postCount || 0}</td>
+                    <td>${user.commentCount || 0}</td>
+                    <td><span class="user-status ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="action-btn block-btn" data-id="${user.id}" data-action="toggleBlock">
+                                ${user.isBlocked ? '🔓 Fur' : '🚫 Xannib'}
+                            </button>
+                            ${!user.isAdmin ? `
+                                <button class="action-btn delete-btn" data-id="${user.id}" data-action="delete">
+                                    🗑️ Tirtir
+                                </button>
+                                <button class="action-btn invite-btn" data-id="${user.id}" data-action="invite">
+                                    👑 Guji
+                                </button>
+                            ` : user.username !== 'zaki' ? `
+                                <button class="action-btn remove-btn" data-id="${user.id}" data-action="removeFromGroup">
+                                    🚪 Ka Saar
+                                </button>
+                            ` : ''}
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            attachUserEventListeners();
+        }
+
+        function attachUserEventListeners() {
+            document.querySelectorAll('.action-btn').forEach(button => {
+                button.addEventListener('click', handleUserAction);
+            });
+        }
+
+        function handleUserAction(event) {
+            const button = event.target;
+            const userId = button.getAttribute('data-id');
+            const action = button.getAttribute('data-action');
+            
+            if (action === 'invite') {
+                showInviteModal(userId);
+                return;
+            }
+
+            let endpoint = '';
+            let confirmationMessage = '';
+
+            if (action === 'delete') {
+                confirmationMessage = `Ma hubtaa in aad rabto in aad si joogto ah u tirtirto user-ka ID ${userId}?\n\nTani waxay tirtiri doontaa dhammaan post-yadiisa, comment-yadiisa, iyo muusigiisa!`;
+                endpoint = `/api/admin/delete-user/${userId}`;
+            } else if (action === 'toggleBlock') {
+                const isBlocked = button.textContent.includes('Fur');
+                confirmationMessage = isBlocked 
+                    ? `Ma hubtaa in aad rabto in aad furto user-ka ID ${userId}?`
+                    : `Ma hubtaa in aad rabto in aad xannibto user-ka ID ${userId}?\n\nUser-kan ma soo geli karo sistema marka la xannibayo.`;
+                endpoint = `/api/admin/toggle-block/${userId}`;
+            } else if (action === 'removeFromGroup') {
+                confirmationMessage = `Ma hubtaa in aad rabto in aad ka saarto user-kan kooxda admin-ka?\n\nUser-kan wuu lumayaa dhammaan awoodihiisa admin-ka.`;
+                endpoint = `/api/admin/group/remove`;
+            } else {
+                return;
+            }
+
+            if (confirm(confirmationMessage)) {
+                button.disabled = true;
+                button.textContent = 'Ku soco...';
+
+                const requestOptions = {
+                    method: 'POST',
+                    headers: action === 'removeFromGroup' ? { 'Content-Type': 'application/json' } : {}
+                };
+
+                if (action === 'removeFromGroup') {
+                    requestOptions.body = JSON.stringify({ userId: parseInt(userId) });
+                }
+
+                fetch(endpoint, requestOptions)
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            showMessage(result.message || "Ficilka si guul leh ayuu u dhacay.", 'success');
+                            fetchUsersData();
+                            if (action === 'removeFromGroup') {
+                                fetchAdminGroup();
+                            }
+                        } else {
+                            showMessage('Khalad: ' + (result.message || 'Ficilka ma shaqayn'), 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showMessage('Khalad network: Lama gaarin server-ka.', 'error');
+                    })
+                    .finally(() => {
+                        button.disabled = false;
+                    });
+            }
+        }
+
+        // =========================================================
+        // ANNOUNCEMENTS MANAGEMENT
+        // =========================================================
+        function fetchAnnouncements() {
+            fetch('/api/announcements')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success) {
+                        renderAnnouncements(data.announcements);
+                    } else {
+                        showMessage("Lama soo dejin karo fariimaha.", 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage("Khalad server: " + error.message, 'error');
+                });
+        }
+
+        function renderAnnouncements(announcements) {
+            const container = document.getElementById('announcementsList');
+            
+            if (announcements.length === 0) {
+                container.innerHTML = '<div class="loading">Weli ma jiraan fariimo.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            announcements.forEach(announcement => {
+                const announcementEl = document.createElement('div');
+                announcementEl.className = 'admin-table';
+                announcementEl.style.marginBottom = '15px';
+                announcementEl.style.padding = '20px';
+                
+                const typeIcons = {
+                    'info': '🔵',
+                    'warning': '🟡', 
+                    'success': '🟢',
+                    'error': '🔴'
+                };
+
+                announcementEl.innerHTML = `
+                    <div style="display: flex; justify-content: between; align-items: start; margin-bottom: 10px;">
+                        <h4 style="margin: 0; flex: 1;">${typeIcons[announcement.type] || '🔵'} ${announcement.title}</h4>
+                        <small style="color: var(--text-color); opacity: 0.7;">${new Date(announcement.createdAt).toLocaleString('so-SO')}</small>
+                    </div>
+                    <p style="margin: 0; line-height: 1.5;">${announcement.message}</p>
+                    <div style="margin-top: 10px; font-size: 0.8em; color: var(--text-color); opacity: 0.7;">
+                        U soo dhigay: ${announcement.createdBy}
+                    </div>
+                `;
+                
+                container.appendChild(announcementEl);
+            });
+        }
+
+        function showAnnouncementModal() {
+            document.getElementById('announcementModal').style.display = 'block';
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcementModal').style.display = 'none';
+            document.getElementById('announcementForm').reset();
+        }
+
+        document.getElementById('announcementForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('announcementTitle').value;
+            const message = document.getElementById('announcementMessage').value;
+            const type = document.getElementById('announcementType').value;
+
+            fetch('/api/admin/announcements', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, message, type })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    closeAnnouncementModal();
+                    fetchAnnouncements();
+                } else {
+                    showMessage('Khalad: ' + result.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Khalad network: Lama soo dhigin karo fariinta.', 'error');
+            });
+        });
+
+        // =========================================================
+        // ADMIN GROUP MANAGEMENT
+        // =========================================================
+        function fetchAdminGroup() {
+            fetch('/api/admin/group')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success) {
+                        renderAdminGroup(data.group);
+                    } else {
+                        showMessage("Lama soo dejin karo xogta kooxda.", 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage("Khalad server: " + error.message, 'error');
+                });
+        }
+
+        function renderAdminGroup(group) {
+            // Update stats
+            document.getElementById('groupMembers').textContent = group.members.length;
+            document.getElementById('pendingInvites').textContent = group.invitations.length;
+
+            // Render members
+            const membersContainer = document.getElementById('groupMembersList');
+            if (group.members.length === 0) {
+                membersContainer.innerHTML = '<div class="loading">Ma jiro xubno kooxda.</div>';
+            } else {
+                membersContainer.innerHTML = '';
+                group.members.forEach(member => {
+                    const memberEl = document.createElement('div');
+                    memberEl.className = 'group-member';
+                    memberEl.innerHTML = `
+                        <img src="${member.profileImage || '/profiles/default.png'}" alt="${member.username}" class="member-avatar" onerror="this.src='/profiles/default.png'">
+                        <div class="member-info">
+                            <strong>${member.username}</strong>
+                            ${member.id === 1 ? '<span style="color: var(--warning-color); margin-left: 10px;">👑 Aasaasaha</span>' : ''}
+                        </div>
+                    `;
+                    membersContainer.appendChild(memberEl);
+                });
+            }
+
+            // Render invitations
+            const invitationsContainer = document.getElementById('invitationsList');
+            if (group.invitations.length === 0) {
+                invitationsContainer.innerHTML = '<div class="loading">Ma jiro codsiyo la sugayo.</div>';
+            } else {
+                invitationsContainer.innerHTML = '';
+                group.invitations.forEach(invitation => {
+                    const invitationEl = document.createElement('div');
+                    invitationEl.className = 'invitation-item';
+                    invitationEl.innerHTML = `
+                        <div>
+                            <strong>${invitation.username}</strong>
+                            <div style="font-size: 0.8em; color: var(--text-color); opacity: 0.7;">
+                                La soo dirtay: ${new Date(invitation.invitedAt).toLocaleString('so-SO')}
+                            </div>
+                        </div>
+                        <div style="font-size: 0.8em; color: var(--text-color); opacity: 0.7;">
+                            U dirtay: ${invitation.invitedBy}
+                        </div>
+                    `;
+                    invitationsContainer.appendChild(invitationEl);
+                });
+            }
+        }
+
+        function showInviteModal(preSelectedUserId = null) {
+            // Load users for selection
+            fetch('/api/admin/users')
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success) {
+                        const userSelect = document.getElementById('userSelect');
+                        userSelect.innerHTML = '<option value="">-- Dooro user --</option>';
+                        
+                        data.users.forEach(user => {
+                            if (!user.isAdmin && user.username !== 'zaki') {
+                                const option = document.createElement('option');
+                                option.value = user.id;
+                                option.textContent = user.username;
+                                if (preSelectedUserId && user.id == preSelectedUserId) {
+                                    option.selected = true;
+                                }
+                                userSelect.appendChild(option);
+                            }
+                        });
+
+                        document.getElementById('inviteModal').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    showMessage("Khalad: Lama soo dejin karo liiska user-yada.", 'error');
+                });
+        }
+
+        function closeInviteModal() {
+            document.getElementById('inviteModal').style.display = 'none';
+        }
+
+        function sendInvitation() {
+            const userId = document.getElementById('userSelect').value;
+            
+            if (!userId) {
+                showMessage("Fadlan dooro user.", 'error');
+                return;
+            }
+
+            fetch('/api/admin/group/invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: parseInt(userId) })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    showMessage(result.message, 'success');
+                    closeInviteModal();
+                    fetchAdminGroup();
+                    fetchUsersData();
+                } else {
+                    showMessage('Khalad: ' + result.message, 'error');
+                }
+            })
+            .catch(error => {
+                showMessage('Khalad network: Lama dirin karo codsiga.', 'error');
+            });
+        }
+
+        // =========================================================
+        // IMAGE CLEANUP
+        // =========================================================
+        function runImageCleanup() {
+            if (confirm('Ma hubtaa in aad rabto in aad nadiifiso sawirada profile-ka ee aan la isticmaalin?\n\nTani waxay tirtiri doontaa dhammaan sawirada aan user-yadu isticmaalin.')) {
+                const cleanupBtn = document.querySelector('.cleanup-btn');
+                cleanupBtn.disabled = true;
+                cleanupBtn.textContent = 'Nadiifineysaa...';
+
+                fetch('/api/admin/cleanup-images', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            showMessage(result.message, 'success');
+                            displayCleanupReport(result.report);
+                        } else {
+                            showMessage('Khalad: ' + result.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showMessage('Khalad network: Lama nadiifin karo sawirada.', 'error');
+                    })
+                    .finally(() => {
+                        cleanupBtn.disabled = false;
+                        cleanupBtn.textContent = '🧹 Nadiifi Sawirada Aan La Isticmaalin';
+                    });
+            }
+        }
+
+        function displayCleanupReport(report) {
+            const reportContainer = document.getElementById('cleanupReport');
+            
+            let reportHTML = `
+                <div class="cleanup-report">
+                    <h3>📊 Warbixinta Nadiifinta</h3>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">${report.totalFiles}</div>
+                            <div class="stat-label">Wadarta Faylasha</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${report.deletedFiles}</div>
+                            <div class="stat-label">Faylasha La Tirtiray</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${report.keptFiles}</div>
+                            <div class="stat-label">Faylasha La Haystay</div>
+                        </div>
+                    </div>
+            `;
+
+            if (report.deletedFiles > 0) {
+                reportHTML += `
+                    <div class="report-section">
+                        <h4>🗑️ Faylasha La Tirtiray (${report.deletedFiles})</h4>
+                        <div class="report-list">
+                `;
+                
+                report.deletedList.forEach(file => {
+                    reportHTML += `
+                        <div class="report-item">
+                            <span>${file.filename}</span>
+                            <span style="color: var(--danger-color);">${file.size} - Tirtiray</span>
+                        </div>
+                    `;
+                });
+                
+                reportHTML += `</div></div>`;
+            }
+
+            if (report.keptList.length > 0) {
+                reportHTML += `
+                    <div class="report-section">
+                        <h4>💾 Faylasha La Haystay (${report.keptList.length})</h4>
+                        <div class="report-list">
+                `;
+                
+                report.keptList.forEach(file => {
+                    reportHTML += `
+                        <div class="report-item">
+                            <span>${file.filename}</span>
+                            <span style="color: var(--success-color);">${file.reason} - ${file.username}</span>
+                        </div>
+                    `;
+                });
+                
+                reportHTML += `</div></div>`;
+            }
+
+            reportHTML += `</div>`;
+            reportContainer.innerHTML = reportHTML;
+            reportContainer.style.display = 'block';
+        }
+
+        // =========================================================
+        // INITIALIZATION
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load initial tab data
+            fetchUsersData();
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

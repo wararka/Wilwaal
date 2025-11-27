@@ -1,0 +1,32 @@
+[
+    {
+        "username": "Zaki",
+        "password": "$2b$10$p2XFdVVaFZsAoZVAUKnJZu04MknwyozrgnPysirEfpA.MG.MoX0Zm",
+        "profileImage": "/profiles/profile-Zaki-1764191716271-266664446.jpg",
+        "id": 1,
+        "isAdmin": true,
+        "isBlocked": false,
+        "isPublic": true,
+        "joinedAt": "2025-11-26T19:22:37.157Z"
+    },
+    {
+        "username": "Najma",
+        "password": "$2b$10$K0P0TcrvkkwG3q2A7lbIpelG59LkXcHqzh3hX1ew/Ywog5qBIeYx.",
+        "profileImage": "/profiles/profile-Najma-1764185104080-906697729.jpg",
+        "id": 2,
+        "isAdmin": false,
+        "isBlocked": false,
+        "isPublic": true,
+        "joinedAt": "2025-11-26T19:25:04.096Z"
+    },
+    {
+        "username": "lacaso",
+        "password": "$2b$10$vgKzwL5CyQeR2/v/0r1y9ewRAN3Fksro4fEvzshIgXbW9.9wpTdbm",
+        "profileImage": "/profiles/profile-lacaso-1764186486686-159637616.jpg",
+        "id": 3,
+        "isAdmin": false,
+        "isBlocked": false,
+        "isPublic": true,
+        "joinedAt": "2025-11-26T19:48:06.797Z"
+    }
+]

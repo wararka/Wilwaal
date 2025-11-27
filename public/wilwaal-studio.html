@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎶 Wilwaal Studio - Fanaaniinta</title>
+    <link rel="stylesheet" href="wilwaal-studio.css">
+    <style>
+        /* GABAGABO: Menu-ka Navigation */
+        .nav-menu {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: var(--bg-color);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+        
+        .nav-links a:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .artist-image img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Bedel Habka Midabka">
+        🌙
+    </button>
+
+<!-- 🎯 MENU TOGGLE BUTTON - WAA LA MUUJINAYAA -->
+<button class="menu-toggle" id="menuToggle" title="Fur Menu">
+    ☰
+</button>
+
+<!-- 🎯 HACKER SIDEBAR MENU - QARSOOMID BILOW AH -->
+<nav class="hacker-sidebar" id="hackerSidebar">
+    <!-- 🆕 CLOSE BUTTON -->
+    <button class="menu-close" id="menuClose" title="Xidh Menu">✕</button>
+    
+    <ul class="sidebar-links">
+        <li><a href="index.html">
+            <span class="icon">🏠</span>
+            <span class="link-text">Guriga</span>
+        </a></li>
+        
+        <li><a href="settings.html">
+            <span class="icon">⚙️</span>
+            <span class="link-text">Gobaha</span>
+        </a></li>
+        
+        <li><a href="users-list.html">
+            <span class="icon">👥</span>
+            <span class="link-text">Wadaag</span>
+        </a></li>
+        
+        <li><a href="sheeko.html">
+            <span class="icon">💬</span>
+            <span class="link-text">Sheeko</span>
+        </a></li>
+        
+        <li><a href="profile.html">
+            <span class="icon">👤</span>
+            <span class="link-text">Profile</span>
+        </a></li>
+        
+        <li><a href="wilwaal-studio.html">
+            <span class="icon">🎶</span>
+            <span class="link-text">Wilwaal</span>
+        </a></li>
+    </ul>
+</nav>
+
+        <h1>🎶 Wilwaal Studio</h1>
+
+        <div class="controls">
+            <div id="searchArea">
+                <input type="text" id="searchInput" placeholder="Raadi Hees, Fanaan ama User-ka soo dhigay...">
+            </div>
+            <a href="upload-music.html" class="upload-btn">🎙️ Soo Geli Muusig</a>
+        </div>
+
+        <h2>Fanaaniinta Liiska</h2>
+        <div id="artistList">
+            <p class="loading">Fadlan sug... Waxaan soo dejinayaa liiska fanaaniinta.</p>
+        </div>
+
+        <div id="searchResults" style="display:none; margin-top: 30px;">
+            <h2>Natiijada Raadinta</h2>
+            <div id="searchResultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Xogta Muhiimka ah
+        const artistListContainer = document.getElementById('artistList');
+        const searchInput = document.getElementById('searchInput');
+        const themeToggle = document.getElementById('themeToggle');
+
+        // =========================================================
+        // 1. THEME TOGGLE - Simple and Clean
+        // =========================================================
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        themeToggle.textContent = currentTheme === 'light' ? '🌙' : '☀️';
+
+        themeToggle.addEventListener('click', function() {
+            let theme = document.documentElement.getAttribute('data-theme');
+            theme = theme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+        });
+
+        // =========================================================
+        // 2. SOO DEJINTA FANAANIINTA - Version Cusub
+        // =========================================================
+        document.addEventListener('DOMContentLoaded', fetchArtists);
+
+        async function fetchArtists() {
+            try {
+                const response = await fetch('/api/music/artists');
+                if (!response.ok) throw new Error('Khalad network-ka');
+                
+                const data = await response.json();
+                
+                if (data.success && data.artists.length > 0) {
+                    await displayArtistsWithImages(data.artists);
+                } else {
+                    showNoArtistsMessage();
+                }
+            } catch (error) {
+                console.error('Khalad:', error);
+                showErrorMessage();
+            }
+        }
+
+        // =========================================================
+        // 3. MUUJINTA FANAANIINTA - Sawirrada La Helayo
+        // =========================================================
+        async function displayArtistsWithImages(artists) {
+            artistListContainer.innerHTML = '';
+            
+            for (let artist of artists) {
+                // Soo hel sawirka fanaanka
+                const artistImage = await getArtistImage(artist.name);
+                
+                const card = document.createElement('div');
+                card.className = 'artist-card';
+                
+                card.innerHTML = `
+                    <a href="heesaha.html?artist=${encodeURIComponent(artist.name)}">
+                        <div class="artist-image">
+                            <img src="${artistImage}" alt="${artist.name}" 
+                                 onerror="this.src='/artist-images/default-artist.png'">
+                        </div>
+                        <div class="artist-info">
+                            <h3>${artist.name}</h3>
+                            <p>${artist.songCount} Hees</p>
+                        </div>
+                    </a>
+                `;
+                
+                artistListContainer.appendChild(card);
+            }
+        }
+
+        // =========================================================
+        // 4. SOO HEL SAWIRKA FANAANKA - Function Cusub
+        // =========================================================
+        async function getArtistImage(artistName) {
+            try {
+                // Marka hore, isku day inaad hesho sawirka fanaanka
+                const response = await fetch(`/api/music/songs/${encodeURIComponent(artistName)}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.songs.length > 0) {
+                        // Qaado sawirka ugu horreeya ee heesta
+                        return data.songs[0].artistImage || '/artist-images/default-artist.png';
+                    }
+                }
+            } catch (error) {
+                console.log('Sawir lama helin fanaanka:', artistName);
+            }
+            
+            // Haddii aan la helin, isticmaal sawirka default
+            return '/artist-images/default-artist.png';
+        }
+
+        // =========================================================
+        // 5. RAADINTA - La Hagaajiyay
+        // =========================================================
+        searchInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim().toLowerCase();
+            
+            if (query.length < 2) {
+                fetchArtists(); // Dib u soo celi fanaaniinta dhammaan
+                return;
+            }
+
+            // Raadin fanaaniinta ee hore u jira
+            const artistCards = document.querySelectorAll('.artist-card');
+            let foundAny = false;
+
+            artistCards.forEach(card => {
+                const artistName = card.querySelector('h3').textContent.toLowerCase();
+                if (artistName.includes(query)) {
+                    card.style.display = 'block';
+                    foundAny = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (!foundAny) {
+                artistListContainer.innerHTML = '<p class="loading">Lama helin fanaan ku acoonsan "' + query + '"</p>';
+            }
+        });
+
+        // =========================================================
+        // 6. MESSAGES - Khalad-yada
+        // =========================================================
+        function showNoArtistsMessage() {
+            artistListContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>🚫 Weli ma jiro wax muusig ah oo la soo geliyay</p>
+                    <a href="upload-music.html" class="upload-link">Bilow Soo Gelinta Muusigga</a>
+                </div>
+            `;
+        }
+
+        function showErrorMessage() {
+            artistListContainer.innerHTML = `
+                <div class="error-state">
+                    <p>❌ Khalad: Lama soo dejin karo xogta fanaaniinta</p>
+                    <button onclick="fetchArtists()" class="retry-btn">Isku Day Mar Kale</button>
+                </div>
+            `;
+        }
+
+        // =========================================================
+        // 7. KEYBOARD SHORTCUTS
+        // =========================================================
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '/' && document.activeElement !== searchInput) {
+                e.preventDefault();
+                searchInput.focus();
+            }
+        });
+
+
+
+// 🎯 MENU TOGGLE FUNCTIONALITY - DISPLAY NONE
+const menuToggle = document.getElementById('menuToggle');
+const menuClose = document.getElementById('menuClose');
+const hackerSidebar = document.getElementById('hackerSidebar');
+
+// 🆕 FURID MENU - MARKA LA TAABTO ☰
+menuToggle.addEventListener('click', function() {
+    hackerSidebar.classList.add('show');
+    menuToggle.style.display = 'none'; // 🆕 Qarsoomi ☰ marka menu la furo
+});
+
+// 🆕 XIDHID MENU - MARKA LA TAABTO ✕
+menuClose.addEventListener('click', function() {
+    hackerSidebar.classList.remove('show');
+    menuToggle.style.display = 'block'; // 🆕 Soo muuji ☰ marka menu la xidho
+});
+
+// 🆕 XIDHID MENU - MARKA LA TAABO BACKGROUND
+document.addEventListener('click', function(event) {
+    const isClickInsideMenu = hackerSidebar.contains(event.target);
+    const isClickOnToggle = menuToggle.contains(event.target);
+    
+    if (!isClickInsideMenu && !isClickOnToggle && hackerSidebar.classList.contains('show')) {
+        hackerSidebar.classList.remove('show');
+        menuToggle.style.display = 'block'; // 🆕 Soo muuji ☰
+    }
+});
+
+// 🆕 XIDHID MENU - MARKA LA DHUFO ESCAPE
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && hackerSidebar.classList.contains('show')) {
+        hackerSidebar.classList.remove('show');
+        menuToggle.style.display = 'block'; // 🆕 Soo muuji ☰
+    }
+});
+
+// 🆕 ACTIVE LINK HIGHLIGHTING
+const currentPage = window.location.pathname.split('/').pop();
+const sidebarLinks = document.querySelectorAll('.sidebar-links a');
+
+sidebarLinks.forEach(link => {
+    const linkPage = link.getAttribute('href');
+    if (linkPage === currentPage) {
+        link.classList.add('active');
+    }
+    
+    // 🆕 XIDHID MENU MARKA LINK LA TAABTO (MOBILE)
+    link.addEventListener('click', function() {
+        if (window.innerWidth <= 480) {
+            setTimeout(() => {
+                hackerSidebar.classList.remove('show');
+                menuToggle.style.display = 'block'; // 🆕 Soo muuji ☰
+            }, 300);
+        }
+    });
+});
+
+// 🆕 AUTO-HIDE ON RESIZE
+window.addEventListener('resize', function() {
+    if (window.innerWidth > 480 && hackerSidebar.classList.contains('show')) {
+        hackerSidebar.classList.remove('show');
+        menuToggle.style.display = 'block'; // 🆕 Soo muuji ☰
+    }
+});
+    </script>
+</body>
+</html>

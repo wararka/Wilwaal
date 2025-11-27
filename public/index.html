@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Guriga - Hacker Social</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <!-- 🎯 MENU TOGGLE BUTTON -->
+    <button class="menu-toggle" id="menuToggle" title="Fur Menu">
+        ☰
+    </button>
+
+    <!-- 🎯 HACKER SIDEBAR MENU -->
+    <nav class="hacker-sidebar" id="hackerSidebar">
+        <button class="menu-close" id="menuClose" title="Xidh Menu">✕</button>
+        
+        <div class="sidebar-header">
+            <h3>🚀 SYSTEM_MENU</h3>
+        </div>
+        
+        <ul class="sidebar-links">
+            <li><a href="index.html" class="active">
+                <span class="icon">🏠</span>
+                <span class="link-text">Guriga</span>
+            </a></li>
+            
+            <li><a href="settings.html">
+                <span class="icon">⚙️</span>
+                <span class="link-text">Gobaha</span>
+            </a></li>
+            
+            <li><a href="users-list.html">
+                <span class="icon">👥</span>
+                <span class="link-text">Wadaag</span>
+            </a></li>
+            
+            <li><a href="sheeko.html">
+                <span class="icon">💬</span>
+                <span class="link-text">Sheeko</span>
+            </a></li>
+            
+            <li><a href="profile.html">
+                <span class="icon">👤</span>
+                <span class="link-text">Profile</span>
+            </a></li>
+            
+            <li><a href="wilwaal-studio.html">
+                <span class="icon">🎶</span>
+                <span class="link-text">Wilwaal</span>
+            </a></li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <span id="currentUser">Loading...</span>
+            </div>
+            <a href="/logout" class="logout-btn">🚪 Ka Bax</a>
+        </div>
+    </nav>
+
+    <!-- 🎯 MAIN CONTENT -->
+    <div class="container">
+        <!-- HEADER -->
+        <header class="terminal-header">
+            <h1 class="typing">>_ SOCIAL_HUB_TERMINAL</h1>
+            <div class="status-bar">
+                <span class="status-online">🟢 ONLINE</span>
+                <span class="user-count" id="userCount">Loading users...</span>
+            </div>
+        </header>
+
+        <!-- CREATE POST SECTION -->
+        <section class="create-post-section">
+            <div class="terminal-box">
+                <div class="terminal-title">>_ CREATE_NEW_POST</div>
+                <div class="post-form">
+                    <textarea id="postText" placeholder=">_ Ku qor fariintaada halkan..." rows="4"></textarea>
+                    <div class="post-actions">
+                        <button id="addMediaBtn" class="hacker-btn">📁 Soo Gel Media</button>
+                        <input type="file" id="mediaInput" accept="image/*,video/*,audio/*" style="display: none;">
+                        <button id="submitPost" class="hacker-btn primary">🚀 Dir Post</button>
+                    </div>
+                    <div id="mediaPreview" class="media-preview"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- POSTS FEED -->
+        <section class="posts-feed">
+            <div class="terminal-box">
+                <div class="terminal-title">>_ POSTS_FEED [<span id="postsCount">0</span>]</div>
+                <div id="postsContainer" class="posts-container">
+                    <div class="loading-terminal">
+                        <div class="loading-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <p>Soo dejineysaa posts-ka...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // ===================================================
+        // MENU TOGGLE FUNCTIONALITY
+        // ===================================================
+        const menuToggle = document.getElementById('menuToggle');
+        const menuClose = document.getElementById('menuClose');
+        const hackerSidebar = document.getElementById('hackerSidebar');
+
+        // Furid menu marka la taabto ☰
+        menuToggle.addEventListener('click', function() {
+            hackerSidebar.classList.add('show');
+            menuToggle.style.display = 'none';
+        });
+
+        // Xidhid menu marka la taabto ✕
+        menuClose.addEventListener('click', function() {
+            hackerSidebar.classList.remove('show');
+            menuToggle.style.display = 'block';
+        });
+
+        // Xidhid menu marka la taabo background
+        document.addEventListener('click', function(event) {
+            const isClickInsideMenu = hackerSidebar.contains(event.target);
+            const isClickOnToggle = menuToggle.contains(event.target);
+            
+            if (!isClickInsideMenu && !isClickOnToggle && hackerSidebar.classList.contains('show')) {
+                hackerSidebar.classList.remove('show');
+                menuToggle.style.display = 'block';
+            }
+        });
+
+        // Xidhid menu marka la dhufo ESCAPE
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && hackerSidebar.classList.contains('show')) {
+                hackerSidebar.classList.remove('show');
+                menuToggle.style.display = 'block';
+            }
+        });
+
+        // ===================================================
+        // USER INFO & THEME
+        // ===================================================
+        // Soo dejinta user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/user-info');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        document.getElementById('currentUser').textContent = `@${data.user.username}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Khalad user info:', error);
+            }
+        }
+
+        // Theme toggle
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', currentTheme);
+
+        // ===================================================
+        // POST CREATION FUNCTIONALITY
+        // ===================================================
+        const postText = document.getElementById('postText');
+        const addMediaBtn = document.getElementById('addMediaBtn');
+        const mediaInput = document.getElementById('mediaInput');
+        const mediaPreview = document.getElementById('mediaPreview');
+        const submitPost = document.getElementById('submitPost');
+
+        // Soo gelida media
+        addMediaBtn.addEventListener('click', () => mediaInput.click());
+
+        mediaInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const url = URL.createObjectURL(file);
+                const fileType = file.type.split('/')[0];
+                
+                mediaPreview.innerHTML = `
+                    <div class="preview-item">
+                        <div class="preview-content">
+                            ${fileType === 'image' ? `<img src="${url}" alt="Preview">` : ''}
+                            ${fileType === 'video' ? `<video controls><source src="${url}"></video>` : ''}
+                            ${fileType === 'audio' ? `<audio controls><source src="${url}"></audio>` : ''}
+                        </div>
+                        <button class="remove-preview" onclick="removeMedia()">✕</button>
+                    </div>
+                `;
+            }
+        });
+
+        // Tirtir media preview
+        window.removeMedia = function() {
+            mediaPreview.innerHTML = '';
+            mediaInput.value = '';
+        };
+
+        // Dirida post-ka
+        submitPost.addEventListener('click', async function() {
+            const text = postText.value.trim();
+            const mediaFile = mediaInput.files[0];
+
+            if (!text && !mediaFile) {
+                showTerminalAlert('❌ Fadlan ku dar qoraal ama media!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            if (text) formData.append('postText', text);
+            if (mediaFile) formData.append('postMedia', mediaFile);
+
+            try {
+                submitPost.disabled = true;
+                submitPost.textContent = '🚀 Dirayo...';
+
+                const response = await fetch('/create-post', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    showTerminalAlert('✅ Post-kaaga waa la soo dhigay!', 'success');
+                    postText.value = '';
+                    removeMedia();
+                    loadPosts(); // Dib u soo dejiso posts-ka
+                } else {
+                    throw new Error('Khalad diraynta post-ka');
+                }
+            } catch (error) {
+                showTerminalAlert('❌ Khalad diraynta post-ka', 'error');
+                console.error('Khalad:', error);
+            } finally {
+                submitPost.disabled = false;
+                submitPost.textContent = '🚀 Dir Post';
+            }
+        });
+
+        // ===================================================
+        // POSTS FEED FUNCTIONALITY
+        // ===================================================
+        async function loadPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const posts = await response.json();
+                
+                const postsContainer = document.getElementById('postsContainer');
+                const postsCount = document.getElementById('postsCount');
+                
+                postsCount.textContent = posts.length;
+                
+                if (posts.length === 0) {
+                    postsContainer.innerHTML = `
+                        <div class="empty-terminal">
+                            <p>🚫 Ma jiro wax posts ah oo hadda</p>
+                            <p>Adiga ayaa halkaa u horreeya!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                postsContainer.innerHTML = posts.map(post => `
+                    <div class="post-terminal" data-post-id="${post.id}">
+                        <div class="post-header">
+                            <div class="user-info">
+                                <img src="${post.userProfileImage || '/profiles/default.png'}" 
+                                     alt="${post.username}" class="user-avatar">
+                                <div class="user-details">
+                                    <strong>@${post.username}</strong>
+                                    <span class="post-time">${formatTime(post.createdAt)}</span>
+                                </div>
+                            </div>
+                            <div class="post-actions">
+                                ${post.isEditable ? `
+                                    <button class="post-action-btn" onclick="togglePrivacy('${post.id}')" title="Bedel Privacy">
+                                        ${post.isPublic ? '🌐' : '🔒'}
+                                    </button>
+                                    <button class="post-action-btn" onclick="deletePost('${post.id}')" title="Tirtir">
+                                        🗑️
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="post-content">
+                            ${post.text ? `<p class="post-text">${post.text}</p>` : ''}
+                            ${post.mediaPath ? `
+                                <div class="post-media">
+                                    ${post.mediaType === 'image' ? `<img src="${post.mediaPath}" alt="Post media">` : ''}
+                                    ${post.mediaType === 'video' ? `<video controls><source src="${post.mediaPath}"></video>` : ''}
+                                    ${post.mediaType === 'audio' ? `<audio controls><source src="${post.mediaPath}"></audio>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="post-stats">
+                            <button class="stat-btn like-btn" onclick="toggleLike('${post.id}')">
+                                ❤️ ${post.likes || 0}
+                            </button>
+                            <button class="stat-btn" onclick="focusComment('${post.id}')">
+                                💬 ${post.comments ? post.comments.length : 0}
+                            </button>
+                            <span class="stat-btn">👁️ ${post.views || 0}</span>
+                        </div>
+                        
+                        <div class="post-comments">
+                            ${post.comments && post.comments.length > 0 ? `
+                                <div class="comments-list">
+                                    ${post.comments.slice(0, 3).map(comment => `
+                                        <div class="comment-item">
+                                            <strong>@${comment.username}</strong>
+                                            <span>${comment.text}</span>
+                                        </div>
+                                    `).join('')}
+                                    ${post.comments.length > 3 ? `
+                                        <div class="more-comments">+ ${post.comments.length - 3} in ka badan</div>
+                                    ` : ''}
+                                </div>
+                            ` : ''}
+                            
+                            <div class="comment-form">
+                                <input type="text" class="comment-input" placeholder=">_ Ku dar faallo..." 
+                                       data-post-id="${post.id}">
+                                <button class="comment-btn" onclick="addComment('${post.id}')">💬</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Khalad soo dejinta posts-ka:', error);
+                document.getElementById('postsContainer').innerHTML = `
+                    <div class="error-terminal">
+                        <p>❌ Khalad soo dejinta posts-ka</p>
+                        <button onclick="loadPosts()" class="retry-btn">Isku Day Mar Kale</button>
+                    </div>
+                `;
+            }
+        }
+
+        // ===================================================
+        // POST INTERACTIONS
+        // ===================================================
+        async function toggleLike(postId) {
+            try {
+                const response = await fetch(`/api/posts/like/${postId}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        loadPosts(); // Dib u soo dejiso si likes la arko
+                    }
+                }
+            } catch (error) {
+                console.error('Khalad like-ka:', error);
+            }
+        }
+
+        async function addComment(postId) {
+            const commentInput = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+            const commentText = commentInput.value.trim();
+            
+            if (!commentText) return;
+            
+            try {
+                const response = await fetch(`/api/posts/comment/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ commentText })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        commentInput.value = '';
+                        loadPosts(); // Dib u soo dejiso si comment la arko
+                    }
+                }
+            } catch (error) {
+                console.error('Khalad comment-ka:', error);
+            }
+        }
+
+        async function togglePrivacy(postId) {
+            try {
+                const response = await fetch(`/api/posts/toggle-privacy/${postId}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showTerminalAlert(`✅ Privacy waa la beddelay!`, 'success');
+                        loadPosts();
+                    }
+                }
+            } catch (error) {
+                console.error('Khalad privacy-ka:', error);
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm('Ma hubtaa inaad rabto inaad tirtirto post-kan?')) return;
+            
+            try {
+                const response = await fetch(`/api/posts/delete/${postId}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showTerminalAlert('✅ Post-ka waa la tirtiray!', 'success');
+                        loadPosts();
+                    }
+                }
+            } catch (error) {
+                console.error('Khalad tirtirka post-ka:', error);
+            }
+        }
+
+        function focusComment(postId) {
+            const commentInput = document.querySelector(`.comment-input[data-post-id="${postId}"]`);
+            if (commentInput) {
+                commentInput.focus();
+            }
+        }
+
+        // ===================================================
+        // UTILITY FUNCTIONS
+        // ===================================================
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            
+            if (minutes < 1) return 'Daqiiqad ka hor';
+            if (hours < 1) return `${minutes}d`;
+            if (days < 1) return `${hours}s`;
+            return `${days}m`;
+        }
+
+        function showTerminalAlert(message, type = 'info') {
+            const alert = document.createElement('div');
+            alert.className = `terminal-alert ${type}`;
+            alert.textContent = message;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // ===================================================
+        // INITIALIZATION
+        // ===================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadPosts();
+            
+            // Auto-refresh posts every 30 seconds
+            setInterval(loadPosts, 30000);
+        });
+
+    </script>
+</body>
+</html>

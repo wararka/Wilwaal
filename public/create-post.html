@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abuur Qoraal Cusub</title>
+    <link rel="stylesheet" href="create-post.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" title="Bedel Habka Midabka">
+        🌙
+    </button>
+
+    <h1>Abuur Qoraal Cusub</h1>
+    <p><a href="index.html">Ku Noqo Bogga Weyn</a></p>
+    
+    <div id="messageDisplay" class="message"></div>
+
+    <form id="createPostForm" action="/create-post" method="POST" enctype="multipart/form-data">
+
+        <label for="postText">Qoraalka (Maxaa Cusub?):</label>
+        <textarea id="postText" name="postText" placeholder="Ku qor qoraalkaaga halkan... (Ikhtiyaar)"></textarea>
+
+        <div class="media-upload-group">
+            <label>Ku dar Media (Ikhtiyaar - Dooro Hal Keliya):</label>
+            
+            <input type="file" id="imageFile" name="postMedia" accept="image/*" onchange="handleFileChange(this)">
+            <label for="imageFile">Sawir</label><br><br>
+
+            <input type="file" id="videoFile" name="postMedia" accept="video/*" onchange="handleFileChange(this)">
+            <label for="videoFile">Video</label><br><br>
+
+            <input type="file" id="audioFile" name="postMedia" accept="audio/*" onchange="handleFileChange(this)">
+            <label for="audioFile">Audio</label><br><br>
+        </div>
+        
+        <button type="submit">Soo Dhig (Post)</button>
+    </form>
+
+    <script>
+        // Koodhka JS si loo hubiyo in hal fayl oo keliya la doortay
+        function handleFileChange(changedInput) {
+            const inputs = document.querySelectorAll('input[type="file"][name="postMedia"]');
+            
+            inputs.forEach(input => {
+                if (input !== changedInput) {
+                    input.value = '';
+                }
+            });
+        }
+
+        // Dark/White mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        
+        // Habka hore ee midabka deji
+        document.documentElement.setAttribute('data-theme', currentTheme);
+        updateToggleButton(currentTheme);
+        
+        themeToggle.addEventListener('click', function() {
+            let theme = document.documentElement.getAttribute('data-theme');
+            if (theme === 'light') {
+                theme = 'dark';
+            } else {
+                theme = 'light';
+            }
+            
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            updateToggleButton(theme);
+        });
+        
+        function updateToggleButton(theme) {
+            themeToggle.textContent = theme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Talo: Waxaa laga yaabaa inaan halkan ku darno JS dheeraad ah oo xamili kara fariimaha server-ka.
+    </script>
+</body>
+</html>

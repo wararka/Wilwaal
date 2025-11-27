@@ -1,0 +1,641 @@
+/* =================================================== */
+/*              HACKER STYLE - INDEX PAGE             */
+/* =================================================== */
+
+:root {
+    --hacker-green: #00ff00;
+    --matrix-green: #00cc00;
+    --dark-green: #003300;
+    --black: #000000;
+    --dark-gray: #111111;
+    --terminal-text: #00ff00;
+    --glow-color: #00ff00;
+    --terminal-bg: rgba(0, 20, 0, 0.9);
+}
+
+[data-theme="light"] {
+    --hacker-green: #008800;
+    --matrix-green: #006600;
+    --dark-green: #e8ffe8;
+    --black: #ffffff;
+    --dark-gray: #f0f0f0;
+    --terminal-text: #008800;
+    --glow-color: #008800;
+    --terminal-bg: rgba(232, 255, 232, 0.9);
+}
+
+/* =================================================== */
+/*                  BASE STYLES                       */
+/* =================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--black);
+    color: var(--terminal-text);
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Matrix Rain Background */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        linear-gradient(transparent 95%, rgba(0, 255, 0, 0.1) 100%),
+        repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 50, 0, 0.1) 3px,
+            rgba(0, 50, 0, 0.1) 4px
+        );
+    pointer-events: none;
+    z-index: -1;
+    animation: matrixRain 20s linear infinite;
+}
+
+@keyframes matrixRain {
+    0% { background-position: 0 0; }
+    100% { background-position: 0 100vh; }
+}
+
+/* Scan Lines Effect */
+body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.03) 0px,
+        rgba(0, 0, 0, 0.03) 1px,
+        transparent 1px,
+        transparent 2px
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 80px 20px 20px 20px;
+}
+
+/* =================================================== */
+/*                  SIDEBAR MENU                      */
+/* =================================================== */
+.menu-toggle {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 30, 0, 0.95);
+    border: 2px solid var(--hacker-green);
+    color: var(--hacker-green);
+    padding: 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    display: block;
+}
+
+.menu-toggle:hover {
+    background: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 25px var(--glow-color);
+    transform: scale(1.1);
+}
+
+.hacker-sidebar {
+    position: fixed;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    background: rgba(0, 30, 0, 0.98);
+    border: 2px solid var(--hacker-green);
+    border-radius: 15px;
+    padding: 20px 15px;
+    z-index: 1000;
+    box-shadow: 
+        0 0 30px rgba(0, 255, 0, 0.4),
+        inset 0 0 20px rgba(0, 255, 0, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    display: none;
+    min-width: 200px;
+}
+
+.hacker-sidebar.show {
+    display: block;
+    animation: slideInLeft 0.3s ease-out;
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-100%) translateY(-50%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) translateY(-50%);
+    }
+}
+
+.menu-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    color: var(--hacker-green);
+    font-size: 16px;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.menu-close:hover {
+    background: rgba(255, 0, 0, 0.2);
+    transform: scale(1.1);
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--hacker-green);
+}
+
+.sidebar-header h3 {
+    color: var(--hacker-green);
+    font-size: 14px;
+    text-shadow: 0 0 10px var(--glow-color);
+}
+
+.sidebar-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-links a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--terminal-text);
+    padding: 10px 15px;
+    border-radius: 8px;
+    background: rgba(0, 50, 0, 0.3);
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.sidebar-links a::before {
+    content: ">";
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-links a:hover::before {
+    opacity: 1;
+}
+
+.sidebar-links a:hover {
+    background: rgba(0, 255, 0, 0.15);
+    border-color: var(--hacker-green);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    transform: translateX(5px);
+    padding-left: 20px;
+}
+
+.sidebar-links a.active {
+    background: rgba(0, 255, 0, 0.2);
+    border-color: var(--hacker-green);
+    box-shadow: 0 0 20px var(--glow-color);
+    color: var(--hacker-green);
+}
+
+.sidebar-links a.active::before {
+    opacity: 1;
+    content: ">>";
+}
+
+.sidebar-footer {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid var(--hacker-green);
+    text-align: center;
+}
+
+.user-info {
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--matrix-green);
+}
+
+.logout-btn {
+    display: inline-block;
+    padding: 8px 15px;
+    background: rgba(255, 0, 0, 0.2);
+    color: #ff4444;
+    border: 1px solid #ff4444;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+/* =================================================== */
+/*                  TERMINAL HEADER                   */
+/* =================================================== */
+.terminal-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: var(--terminal-bg);
+    border: 2px solid var(--hacker-green);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.terminal-header h1 {
+    color: var(--hacker-green);
+    font-size: 2em;
+    margin-bottom: 15px;
+    text-shadow: 
+        0 0 10px var(--glow-color),
+        0 0 20px var(--glow-color);
+    animation: glitch 5s infinite;
+}
+
+@keyframes glitch {
+    0%, 100% { transform: translateX(0); }
+    10% { transform: translateX(-2px); }
+    20% { transform: translateX(2px); }
+    30% { transform: translateX(-1px); }
+    40% { transform: translateX(1px); }
+}
+
+.typing {
+    overflow: hidden;
+    border-right: 2px solid var(--hacker-green);
+    white-space: nowrap;
+    margin: 0 auto;
+    animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: var(--hacker-green) }
+}
+
+.status-bar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    font-size: 14px;
+}
+
+.status-online {
+    color: var(--hacker-green);
+    text-shadow: 0 0 5px var(--glow-color);
+}
+
+.user-count {
+    color: var(--matrix-green);
+}
+
+/* =================================================== */
+/*                  TERMINAL BOXES                    */
+/* =================================================== */
+.terminal-box {
+    background: var(--terminal-bg);
+    border: 2px solid var(--hacker-green);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+    overflow: hidden;
+}
+
+.terminal-title {
+    background: rgba(0, 50, 0, 0.5);
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--hacker-green);
+    color: var(--hacker-green);
+    font-weight: bold;
+    font-size: 14px;
+    text-shadow: 0 0 5px var(--glow-color);
+}
+
+/* =================================================== */
+/*                  CREATE POST SECTION               */
+/* =================================================== */
+.create-post-section {
+    margin-bottom: 30px;
+}
+
+.post-form {
+    padding: 20px;
+}
+
+#postText {
+    width: 100%;
+    background: rgba(0, 30, 0, 0.8);
+    border: 1px solid var(--hacker-green);
+    color: var(--terminal-text);
+    font-family: 'Courier New', monospace;
+    padding: 15px;
+    border-radius: 5px;
+    resize: vertical;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+#postText:focus {
+    outline: none;
+    box-shadow: 0 0 15px var(--glow-color);
+    background: rgba(0, 50, 0, 0.9);
+}
+
+#postText::placeholder {
+    color: var(--matrix-green);
+}
+
+.post-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.hacker-btn {
+    padding: 10px 20px;
+    background: rgba(0, 50, 0, 0.5);
+    border: 1px solid var(--hacker-green);
+    color: var(--terminal-text);
+    font-family: 'Courier New', monospace;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.hacker-btn:hover {
+    background: rgba(0, 255, 0, 0.2);
+    box-shadow: 0 0 15px var(--glow-color);
+    transform: translateY(-2px);
+}
+
+.hacker-btn.primary {
+    background: rgba(0, 100, 0, 0.5);
+    border-color: var(--matrix-green);
+}
+
+.hacker-btn.primary:hover {
+    background: rgba(0, 150, 0, 0.5);
+}
+
+.media-preview {
+    margin-top: 15px;
+}
+
+.preview-item {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.preview-content img,
+.preview-content video,
+.preview-content audio {
+    max-width: 200px;
+    max-height: 150px;
+    border: 1px solid var(--hacker-green);
+    border-radius: 5px;
+}
+
+.remove-preview {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: rgba(255, 0, 0, 0.8);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+/* =================================================== */
+/*                  POSTS FEED                        */
+/* =================================================== */
+.posts-container {
+    padding: 20px;
+}
+
+.loading-terminal {
+    text-align: center;
+    padding: 40px;
+    color: var(--matrix-green);
+}
+
+.loading-dots {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.loading-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--hacker-green);
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes bounce {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+
+.empty-terminal,
+.error-terminal {
+    text-align: center;
+    padding: 40px;
+    color: var(--matrix-green);
+}
+
+.retry-btn {
+    margin-top: 15px;
+    padding: 8px 16px;
+    background: rgba(0, 50, 0, 0.5);
+    border: 1px solid var(--hacker-green);
+    color: var(--terminal-text);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
+    background: rgba(0, 255, 0, 0.2);
+}
+
+/* =================================================== */
+/*                  POST TERMINAL                     */
+/* =================================================== */
+.post-terminal {
+    background: rgba(0, 30, 0, 0.6);
+    border: 1px solid var(--hacker-green);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.post-terminal:hover {
+    background: rgba(0, 50, 0, 0.8);
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.post-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--hacker-green);
+    object-fit: cover;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-details strong {
+    color: var(--hacker-green);
+    font-size: 14px;
+}
+
+.post-time {
+    font-size: 12px;
+    color: var(--matrix-green);
+}
+
+.post-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.post-action-btn {
+    background: none;
+    border: 1px solid var(--matrix-green);
+    color: var(--terminal-text);
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 12px;
+}
+
+.post-action-btn:hover {
+    background: rgba(0, 255, 0, 0.1);
+    box-shadow: 0 0 8px var(--glow-color);
+}
+
+.post-content {
+    margin-bottom: 15px;
+}
+
+.post-text {
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.post-media img,
+.post-media video,
+.post-media audio {
+    max-width: 100%;
+    border-radius: 5px;
+    border: 1px solid var(--hacker-green);
+}
+
+.post-stats {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+}
+
+.stat-btn {
+    background: none;
+    border: none;
+    color: var(--matrix-green);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+.stat-btn:hover {
+    color: var(--hacker-green);
+    text-shadow: 0 0 5px var(--glow-color);
+}
+
+.like-btn.liked {
+    color: #ff4444;
+}
+
+.post-comments {
+    margin-top: 10px;
+}

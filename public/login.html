@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Soo Gal - Wilwaal Studio</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    
+    <div class="login-container">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="terminal-title">SYSTEM LOGIN - WILWAAL STUDIO</span>
+        </div>
+
+        <div class="login-content">
+            <h1 class="hacker-title">
+                <span class="blink">></span> SOO GAL SYSTEM-KA
+            </h1>
+
+            <!-- Success message from registration -->
+            <div id="successMessage" class="hacker-message success" style="display: none;"></div>
+            
+            <form id="loginFormAction" class="hacker-form">
+                <div id="result" class="hacker-message"></div>
+
+                <div class="input-group">
+                    <label for="username" class="hacker-label">
+                        <span class="blink">$</span> USERNAME:
+                    </label>
+                    <input type="text" id="username" name="username" required 
+                           class="hacker-input" placeholder=">> Geli username-kaaga">
+                    <div class="input-glow"></div>
+                    <div id="usernameError" class="error-detail"></div>
+                </div>
+
+                <div class="input-group">
+                    <label for="password" class="hacker-label">
+                        <span class="blink">#</span> PASSWORD:
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           class="hacker-input" placeholder=">> Geli furaha sirta">
+                    <div class="input-glow"></div>
+                    <div id="passwordError" class="error-detail"></div>
+                </div>
+
+                <button type="submit" class="hacker-btn login-btn">
+                    <span class="btn-text">🚀 SOO GAL</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p class="hacker-text">
+                    <span class="blink">></span> Ma haysataa koonto? 
+                    <a href="register.html" class="hacker-link">🚀 ISKU DIIWAANGELI</a>
+                </p>
+                <p class="hacker-help">
+                    <span class="blink">?</span> 
+                    <a href="#" onclick="showHelp()" class="hacker-link">GARASHO KHALADAADKA SOO GALITAANKA</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="scan-line"></div>
+            <div class="status-bar">
+                <span>STATUS: <span id="statusIndicator" class="status-offline">OFFLINE</span></span>
+                <span>TERMINAL: LOGIN_V1.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal" style="display: none;">
+        <div class="modal-content hacker-modal">
+            <div class="modal-header">
+                <h3>🛠️ GARASHO KHALADAADKA SOO GALITAANKA</h3>
+                <button onclick="closeHelp()" class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="help-item">
+                    <h4>❌ "Username-kaan ma jiro"</h4>
+                    <p>Macnaheedu waa: <strong>Username-kaa ma saxayn</strong> ama ma jiro koonto la xidhiidha username-kaan</p>
+                    <p><strong>Xal:</strong> Hubi inaad si sax ah u qortay username-kaaga ama <a href="register.html">abuuro koonto cusub</a></p>
+                </div>
+                <div class="help-item">
+                    <h4>❌ "Password-kaa waa khalad"</h4>
+                    <p>Macnaheedu waa: <strong>Username-kaa waa sax, laakiin password-kaa ma saxayn</strong></p>
+                    <p><strong>Xal:</strong> Hubi inaad si sax ah u qortay password-kaaga. Haddii aad ilowday, la xiriir maamulaha</p>
+                </div>
+                <div class="help-item">
+                    <h4>❌ "Akoonkaaga waa la xannibay"</h4>
+                    <p>Macnaheedu waa: <strong>Koontadaada waa la xannibay</strong> sababo gaar ah</p>
+                    <p><strong>Xal:</strong> La xiriir maamulaha si aad u furto akoonkaaga</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show registration success message if exists
+        const urlParams = new URLSearchParams(window.location.search);
+        const message = urlParams.get('message');
+        if (message) {
+            document.getElementById('successMessage').textContent = '✅ ' + decodeURIComponent(message);
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        // Update status indicator
+        document.addEventListener('DOMContentLoaded', function() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            statusIndicator.textContent = 'READY';
+            statusIndicator.className = 'status-online';
+        });
+
+        document.getElementById('loginFormAction').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const resultElement = document.getElementById('result');
+            const usernameError = document.getElementById('usernameError');
+            const passwordError = document.getElementById('passwordError');
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            // Clear previous errors
+            resultElement.textContent = '';
+            resultElement.className = 'hacker-message';
+            usernameError.textContent = '';
+            passwordError.textContent = '';
+            usernameError.className = 'error-detail';
+            passwordError.className = 'error-detail';
+            
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').textContent = '🔐 SOO GALAYA...';
+            statusIndicator.textContent = 'AUTHENTICATING';
+            statusIndicator.className = 'status-processing';
+
+            if (!username || !password) {
+                showMessage(resultElement, '❌ Fadlan buuxi dhammaan meelaha bannaan.', 'error');
+                resetButton(submitBtn, statusIndicator);
+                return;
+            }
+
+            // Simulate hacking effect
+            simulateHackingEffect();
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                return response.json().then(error => { throw error; });
+            })
+            .then(data => {
+                if (data.success) {
+                    showMessage(resultElement, '✅ ' + data.message, 'success');
+                    statusIndicator.textContent = 'ACCESS GRANTED';
+                    statusIndicator.className = 'status-success';
+                    
+                    // Redirect after success
+                    setTimeout(() => {
+                        window.location.href = '/index.html';
+                    }, 1500);
+                } else {
+                    throw data;
+                }
+            })
+            .catch(error => {
+                console.error('Khalad ku yimid soo gelista:', error);
+                
+                // Analyze error message and show specific guidance
+                const errorMessage = error.message || 'Khalad ku yimid soo gelista.';
+                showDetailedError(errorMessage, usernameError, passwordError);
+                
+                showMessage(resultElement, '❌ ' + errorMessage, 'error');
+                statusIndicator.textContent = 'ACCESS DENIED';
+                statusIndicator.className = 'status-error';
+                resetButton(submitBtn, statusIndicator);
+            });
+        });
+
+        function showDetailedError(errorMessage, usernameError, passwordError) {
+            const message = errorMessage.toLowerCase();
+            
+            // Clear previous errors
+            usernameError.textContent = '';
+            passwordError.textContent = '';
+            
+            if (message.includes('username') || message.includes('magaca') || message.includes('jiro')) {
+                // Username error
+                usernameError.textContent = '⚠️ Username-kaan ma jiro system-ka. Hubi inaad si sax ah u qortay ama abuur koonto cusub.';
+                usernameError.className = 'error-detail show';
+                
+                // Highlight username field
+                document.getElementById('username').style.borderColor = 'var(--hacker-danger)';
+                document.getElementById('username').style.boxShadow = '0 0 10px var(--hacker-danger)';
+                
+            } else if (message.includes('password') || message.includes('furaha') || message.includes('sirta') || message.includes('khalad')) {
+                // Password error
+                passwordError.textContent = '⚠️ Password-kaa waa khalad. Hubi inaad si sax ah u qortay furaha sirta.';
+                passwordError.className = 'error-detail show';
+                
+                // Highlight password field
+                document.getElementById('password').style.borderColor = 'var(--hacker-danger)';
+                document.getElementById('password').style.boxShadow = '0 0 10px var(--hacker-danger)';
+                
+            } else if (message.includes('xannibay') || message.includes('blocked')) {
+                // Account blocked
+                usernameError.textContent = '🚫 Akoonkaaga waa la xannibay. La xiriir maamulaha.';
+                usernameError.className = 'error-detail show';
+                
+            } else {
+                // Generic error
+                usernameError.textContent = '🔍 Hubi inaad si sax ah u qortay username-ka iyo password-ka';
+                usernameError.className = 'error-detail show';
+            }
+        }
+
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `hacker-message ${type}`;
+        }
+
+        function resetButton(btn, status) {
+            btn.disabled = false;
+            btn.querySelector('.btn-text').textContent = '🚀 SOO GAL';
+            setTimeout(() => {
+                status.textContent = 'READY';
+                status.className = 'status-online';
+            }, 3000);
+        }
+
+        function simulateHackingEffect() {
+            const inputs = document.querySelectorAll('.hacker-input');
+            inputs.forEach(input => {
+                input.style.animation = 'glitch 0.3s';
+                setTimeout(() => {
+                    input.style.animation = '';
+                }, 300);
+            });
+        }
+
+        // Clear messages and errors when user starts typing
+        document.getElementById('username').addEventListener('input', function() {
+            clearErrors();
+            this.style.borderColor = 'var(--hacker-green)';
+            this.style.boxShadow = 'var(--hacker-glow)';
+        });
+        
+        document.getElementById('password').addEventListener('input', function() {
+            clearErrors();
+            this.style.borderColor = 'var(--hacker-green)';
+            this.style.boxShadow = 'var(--hacker-glow)';
+        });
+
+        function clearErrors() {
+            document.getElementById('result').textContent = '';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('usernameError').textContent = '';
+            document.getElementById('passwordError').textContent = '';
+            document.getElementById('usernameError').className = 'error-detail';
+            document.getElementById('passwordError').className = 'error-detail';
+        }
+
+        // Help modal functions
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'block';
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('helpModal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Add focus effects
+        document.querySelectorAll('.hacker-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Isku Diiwaangeli - Wilwaal Studio</title>
+    <link rel="stylesheet" href="register.css">
+</head>
+<body>
+    <div class="matrix-bg"></div>
+    
+    <div class="register-container">
+        <div class="terminal-header">
+            <div class="terminal-dots">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <span class="terminal-title">SYSTEM REGISTRATION - WILWAAL STUDIO</span>
+        </div>
+
+        <div class="register-content">
+            <h1 class="hacker-title">
+                <span class="blink">></span> ABUUR KOONTO CUSUB
+            </h1>
+
+            <div id="message" class="hacker-message"></div>
+            
+            <form id="registrationFormAction" class="hacker-form" enctype="multipart/form-data">
+                <div class="input-group">
+                    <label for="username" class="hacker-label">
+                        <span class="blink">$</span> USERNAME:
+                    </label>
+                    <input type="text" id="username" name="username" required 
+                           class="hacker-input" placeholder=">> Geli username (ugu yaraan 3 xaraf)"
+                           minlength="3">
+                    <div class="input-glow"></div>
+                    <small class="input-hint">Minimum 3 xaraf</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="password" class="hacker-label">
+                        <span class="blink">#</span> PASSWORD:
+                    </label>
+                    <input type="password" id="password" name="password" required 
+                           class="hacker-input" placeholder=">> Geli furaha sirta"
+                           minlength="4">
+                    <div class="input-glow"></div>
+                    <small class="input-hint">Minimum 4 xaraf</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="profileImage" class="hacker-label">
+                        <span class="blink">📷</span> PROFILE IMAGE (Optional):
+                    </label>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="profileImage" name="profileImage" accept="image/*"
+                               class="file-input">
+                        <label for="profileImage" class="file-input-label">
+                            <span class="file-icon">📁</span>
+                            <span class="file-text">Dooro Sawir</span>
+                        </label>
+                    </div>
+                    <small class="input-hint">Ugu badnaan 5MB - JPG, PNG, JPEG</small>
+                </div>
+
+                <div id="imagePreview" class="image-preview"></div>
+
+                <button type="submit" class="hacker-btn register-btn">
+                    <span class="btn-text">🚀 DIIWAANGELI</span>
+                    <div class="btn-glow"></div>
+                </button>
+            </form>
+
+            <div class="register-footer">
+                <p class="hacker-text">
+                    <span class="blink">></span> Haddii aad koonto leedahay? 
+                    <a href="login.html" class="hacker-link">🔐 SOO GAL</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="terminal-footer">
+            <div class="scan-line"></div>
+            <div class="status-bar">
+                <span>STATUS: <span id="statusIndicator" class="status-offline">READY</span></span>
+                <span>TERMINAL: REGISTER_V1.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('registrationFormAction');
+        const messageElement = document.getElementById('message');
+        const statusIndicator = document.getElementById('statusIndicator');
+
+        // Real-time username validation
+        document.getElementById('username').addEventListener('input', function() {
+            const username = this.value.trim();
+            if (username.length > 0 && username.length < 3) {
+                this.style.borderColor = 'var(--hacker-danger)';
+                this.style.boxShadow = '0 0 10px var(--hacker-danger)';
+            } else {
+                this.style.borderColor = 'var(--hacker-green)';
+                this.style.boxShadow = 'var(--hacker-glow)';
+            }
+            clearMessage();
+        });
+
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            if (password.length > 0 && password.length < 4) {
+                this.style.borderColor = 'var(--hacker-danger)';
+                this.style.boxShadow = '0 0 10px var(--hacker-danger)';
+            } else {
+                this.style.borderColor = 'var(--hacker-green)';
+                this.style.boxShadow = 'var(--hacker-glow)';
+            }
+            clearMessage();
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const profileImage = document.getElementById('profileImage').files[0];
+            const submitBtn = this.querySelector('button[type="submit"]');
+
+            clearMessage();
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').textContent = '🔐 DIIWAANGELAYA...';
+            statusIndicator.textContent = 'PROCESSING';
+            statusIndicator.className = 'status-processing';
+
+            // Validation
+            if (username.length < 3) {
+                showMessage('❌ Username-ku waa inuu ka yaraan 3 xaraf', 'error');
+                resetButton(submitBtn);
+                return;
+            }
+
+            if (password.length < 4) {
+                showMessage('❌ Furaha sirta waa inay ka kooban tahay ugu yaraan 4 xaraf', 'error');
+                resetButton(submitBtn);
+                return;
+            }
+
+            // File size validation
+            if (profileImage && profileImage.size > 5 * 1024 * 1024) {
+                showMessage('❌ Sawirka waa weyn yahay! Ugu badnaan 5MB', 'error');
+                resetButton(submitBtn);
+                return;
+            }
+
+            // Simulate hacking effect
+            simulateHackingEffect();
+
+            const formData = new FormData();
+            formData.append('username', username);
+            formData.append('password', password);
+            if (profileImage) {
+                formData.append('profileImage', profileImage);
+            }
+
+            fetch('/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    // Success - redirect to login
+                    showMessage('✅ Koontadaada si guul leh ayaa loo abuuray!', 'success');
+                    statusIndicator.textContent = 'SUCCESS';
+                    statusIndicator.className = 'status-success';
+                    
+                    setTimeout(() => {
+                        window.location.href = response.url;
+                    }, 2000);
+                    return;
+                }
+                return response.text().then(text => {
+                    if (!response.ok) {
+                        throw new Error(text);
+                    }
+                    return text;
+                });
+            })
+            .catch(error => {
+                console.error('Khalad ku yimid diiwaangelinta:', error);
+                showMessage('❌ ' + (error.message || 'Khalad ku yimid diiwaangelinta'), 'error');
+                statusIndicator.textContent = 'ERROR';
+                statusIndicator.className = 'status-error';
+                resetButton(submitBtn);
+            });
+        });
+
+        // Image preview
+        document.getElementById('profileImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showMessage('❌ Sawirka waa weyn yahay! Ugu badnaan 5MB', 'error');
+                    this.value = '';
+                    preview.innerHTML = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `
+                        <div class="preview-container">
+                            <div class="preview-header">
+                                <span class="blink">📷</span> PREVIEW:
+                            </div>
+                            <img src="${e.target.result}" alt="Preview" class="preview-image">
+                            <div class="preview-info">${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)</div>
+                        </div>
+                    `;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        });
+
+        function showMessage(text, type) {
+            messageElement.textContent = text;
+            messageElement.className = `hacker-message ${type}`;
+        }
+
+        function clearMessage() {
+            messageElement.textContent = '';
+            messageElement.className = 'hacker-message';
+        }
+
+        function resetButton(btn) {
+            btn.disabled = false;
+            btn.querySelector('.btn-text').textContent = '🚀 DIIWAANGELI';
+            setTimeout(() => {
+                statusIndicator.textContent = 'READY';
+                statusIndicator.className = 'status-online';
+            }, 3000);
+        }
+
+        function simulateHackingEffect() {
+            const inputs = document.querySelectorAll('.hacker-input');
+            inputs.forEach(input => {
+                input.style.animation = 'glitch 0.3s';
+                setTimeout(() => {
+                    input.style.animation = '';
+                }, 300);
+            });
+        }
+
+        // Add focus effects
+        document.querySelectorAll('.hacker-input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+
+        // File input hover effect
+        document.querySelector('.file-input-label').addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        document.querySelector('.file-input-label').addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    </script>
+</body>
+</html>

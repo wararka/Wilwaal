@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="so">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liiska User-rada Sheekada</title>
+    <link rel="stylesheet" href="user-list.css">
+</head>
+<body>
+    <header>
+        <a href="index.html">⌂ Ku Noqo Bogga Weyn</a> 
+    </header>
+
+    <div class="user-list-container">
+        <h2>👥 Liiska Isticmaalayaasha</h2>
+        <div id="usersList">
+            <p class="typing-effect">Fadlan sug... Waxaan soo dejinayaa liiska user-rada.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', fetchUsersList);
+
+        function fetchUsersList() {
+            fetch('/api/users-list')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const listContainer = document.getElementById('usersList');
+                    listContainer.innerHTML = '';
+
+                    if (data.success && data.users.length > 0) {
+                        data.users.forEach((user, index) => {
+                            // Add delay for staggered animation
+                            setTimeout(() => {
+                                const userElement = createUserElement(user);
+                                listContainer.appendChild(userElement);
+                            }, index * 100);
+                        });
+                    } else {
+                        listContainer.innerHTML = '<p style="text-align: center; color: #888;">🚫 Weli ma jiraan user-ro kale oo la sheekaysan karo.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Khalad ku yimid soo-dejinta liiska user-rada:', error);
+                    document.getElementById('usersList').innerHTML = '<p style="color: #ff4444; text-align: center;">❌ Khalad: Lama soo dejin karo liiska user-rada.</p>';
+                });
+        }
+
+        function createUserElement(user) {
+            const div = document.createElement('div');
+            div.className = 'user-item';
+            div.setAttribute('data-user-id', user.id);
+            div.onclick = () => startChat(user.id, user.username);
+
+            // Add online status indicator (random for demo)
+            const isOnline = Math.random() > 0.3;
+
+            div.innerHTML = `
+                <div class="user-status" style="background: ${isOnline ? '#00ff00' : '#666'}; box-shadow: 0 0 8px ${isOnline ? '#00ff00' : 'transparent'};"></div>
+                <img src="${user.profileImage || '/profiles/default.png'}" alt="${user.username}" class="user-image" onerror="this.src='/profiles/default.png'">
+                <span class="username">${user.username}</span>
+                <span class="start-chat">INITIATE CHAT ⚡</span>
+            `;
+            return div;
+        }
+        
+        // Shaqada Gudbinta Bogga Sheekada
+        function startChat(userId, username) {
+            // Add click animation
+            const userItem = document.querySelector(`[data-user-id="${userId}"]`);
+            if (userItem) {
+                userItem.style.background = 'rgba(0, 136, 255, 0.3)';
+                userItem.style.transform = 'scale(0.98)';
+                
+                setTimeout(() => {
+                    userItem.style.transform = 'scale(1)';
+                }, 150);
+            }
+            
+            // Waxaan u gudbinaynaa ID-ga user-ka kale iyo magaciisa URL-ka
+            setTimeout(() => {
+                window.location.href = `sheeko.html?partnerId=${userId}&partnerName=${encodeURIComponent(username)}`;
+            }, 300);
+        }
+
+        // Auto-refresh every 30 seconds
+        setInterval(fetchUsersList, 30000);
+
+        // Add keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.location.href = 'index.html';
+            }
+        });
+
+    </script>
+</body>
+</html>
